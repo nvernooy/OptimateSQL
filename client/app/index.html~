@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" ng-app="costItems">
+<head>
+  <meta charset="utf-8">
+  <title>Cost System</title>
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="js/controllers.js"></script>
+</head>
+<body ng-controller="ItemListCtrl">
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <div class="col-md-10">
+        <!--Body content-->
+
+        <ul class="projects">
+          <li ng-repeat="project in projects">
+            <span>{{project.Name}}</span>
+            <p>{{project.Description}}</p>
+				
+          </li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
