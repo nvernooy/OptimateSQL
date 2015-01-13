@@ -2,7 +2,7 @@
 <html lang="en" ng-app="costItems">
 <head>
   <meta charset="utf-8">
-  <title>Cost System</title>
+  <title>Optimate Cost System</title>
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="css/app.css">
   <script src="bower_components/angular/angular.js"></script>
