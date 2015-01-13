@@ -61,9 +61,9 @@ def formatdata(request):
             "BudgetGroup": budgetgrouplist})
 
     # Return the finished list of projects, groups, and items.
-    return JSONlist
+    #return JSONlist
 
-    #return [{"Name":"A", "Description":"desc"}]
+    return [{"Name":"A", "Description":"desc"}]
 
 
 def filedata():
