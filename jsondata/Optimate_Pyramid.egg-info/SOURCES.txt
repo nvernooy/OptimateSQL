@@ -1,7 +1,0 @@
-setup.py
-Optimate_Pyramid.egg-info/PKG-INFO
-Optimate_Pyramid.egg-info/SOURCES.txt
-Optimate_Pyramid.egg-info/dependency_links.txt
-Optimate_Pyramid.egg-info/entry_points.txt
-Optimate_Pyramid.egg-info/requires.txt
-Optimate_Pyramid.egg-info/top_level.txt
