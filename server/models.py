@@ -35,7 +35,7 @@ class Project(Persistent):
         self.Name = name
         self.Description = desc
         self.GroupSet = OOSet()
-        self.ID = uuid.uuid1()
+        self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
 
     def add(self, group):
         """The add method adds a BudgetGroup object to the set."""
@@ -96,7 +96,7 @@ class Project(Persistent):
         all the BudgetGroups in the set.
         """
 
-        output = self.Name + ": " + self.Description
+        output = self.Name + ": " + self.Description + ", " + self.ID
         if self.GroupSet is not None:
             for group in self.GroupSet:
                 output += ("\n\t" + str(group))
@@ -126,7 +126,7 @@ class BudgetGroup(Persistent):
         self.Name = name
         self.Description = desc
         self.ItemSet = OOSet()
-        self.ID = uuid.uuid1()
+        self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
 
     def add(self, item):
         """The add method adds a BudgetItem object to the set."""
@@ -187,7 +187,7 @@ class BudgetGroup(Persistent):
         If the set is not empty thereafter it prints all
         the BudgetItems in the set.
         """
-        output = self.Name + ": " + self.Description
+        output = self.Name + ": " + self.Description + ", " + self.ID
         if self.ItemSet is not None:
             for item in self.ItemSet:
                 output += ("\n\t\t" + str(item))
@@ -220,7 +220,7 @@ class BudgetItem(Persistent):
         self.Description = desc
         self.Quantity = quan
         self.Rate = rate
-        self.ID = uuid.uuid1()
+        self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
         if ((self.Quantity < 0) or (self.Rate < 0)):
             self.Quantity = 0
             self.Rate = 0
@@ -261,4 +261,4 @@ class BudgetItem(Persistent):
         The toString method returns a string of the name and
         description of the class.
         """
-        return (self.Name + ": " + self.Description)
+        return self.Name + ": " + self.Description + ", " + self.ID

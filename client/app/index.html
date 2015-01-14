@@ -17,10 +17,30 @@
         <!--Body content-->
 
         <ul class="projects">
+            <!--Print Projects-->
           <li ng-repeat="project in projects">
             <span>{{project.Name}}</span>
             <p>{{project.Description}}</p>
-				
+            <p>{{project.ID}}</p>
+
+            <ul>
+                <!--Print BudgetGroups of the Projects-->
+                <li ng-repeat="budgetgroup in project.BudgetGroups">
+                    <span>{{budgetgroup.Name}}</span>
+                    <p>{{budgetgroup.Description}}</p>
+                    <p>{{budgetgroup.ID}}</p>
+                    <ul>
+                    <!--Print BudgetItems of the BudgetGroups-->
+	               <li ng-repeat="budgetitem in budgetgroup.BudgetItems">
+                            <span>{{budgetitem.Name}}</span>
+                            <p>{{budgetitem.Description}}</p>
+                            <p>{{budgetitem.ID}}</p>
+                            <p>{{budgetitem.Quantity}}</p>
+                            <p>{{budgetitem.Rate}}</p>
+                        </li>
+                    </ul>
+                </li>
+            </ul>		
           </li>
         </ul>
 

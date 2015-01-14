@@ -9,8 +9,8 @@ costItems.controller
     [
         '$scope', '$http', function($scope, $http)
         {
-            //$http.get('cost_items/cost_items.json').success(function(data) {
-            $http.get('http://127.0.0.1:8080/').success
+            //$http.get('cost_items.json').success
+            $http.get('http://127.0.0.1:8080').success
             (
                 function(data)
                 {
