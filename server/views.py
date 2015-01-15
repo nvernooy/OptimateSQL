@@ -27,8 +27,8 @@ def formatdata(request):
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE"
 
     # Get the list from the filedata() method and declare an empty list.
-    #preformatlist = zodbcontrol.databasedata()
-    preformatlist = zodbcontrol.filedata()
+    preformatlist = zodbcontrol.databasedata()
+    #preformatlist = zodbcontrol.filedata()
 
     JSONlist = []
     # Iterate through the list and convert the data into dictionaries.
@@ -44,19 +44,20 @@ def formatdata(request):
                     "Description": budgetitem.Description,
                     "Quantity": budgetitem.Quantity,
                     "Rate": budgetitem.Rate,
-                    "ID": budgetitem.ID})
+                    "ID": budgetitem.ID,
+                    "Subitem": []})
 
             # Build each list and then add it to the dictionary
             budgetgrouplist.insert(len(budgetitemlist),
                 {"Name": budgetgroup.Name,
                 "Description": budgetgroup.Description,
-                "BudgetItems": budgetitemlist,
+                "Subitem": budgetitemlist,
                 "ID": budgetgroup.ID})
 
         JSONlist.insert(len(budgetitemlist),
             {"Name": project.Name,
             "Description": project.Description,
-            "BudgetGroups": budgetgrouplist,
+            "Subitem": budgetgrouplist,
             "ID": project.ID})
 
     # Return the finished list of projects, groups, and items.

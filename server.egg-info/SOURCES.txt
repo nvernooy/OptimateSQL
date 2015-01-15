@@ -1,3 +1,4 @@
+README.txt
 setup.py
 server.egg-info/PKG-INFO
 server.egg-info/SOURCES.txt

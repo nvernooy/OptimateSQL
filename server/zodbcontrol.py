@@ -99,11 +99,11 @@ def databasedata():
         datalist.insert(len(datalist), projectDB[key])
 
     # Commit the change to the database
-    transaction.commit()
+    #transaction.commit()
     # Close the database
-    connection.close()
-    db.close()
-    storage.close()
+    #connection.close()
+    #db.close()
+    #storage.close()
 
     # Return the list
     return datalist
