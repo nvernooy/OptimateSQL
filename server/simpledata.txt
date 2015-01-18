@@ -1,0 +1,12 @@
+=
+A
+ADesc
++
+ABGName
+ABGDesc
+*
+ABIName
+ABIDesc
+10
+10
+EOF
