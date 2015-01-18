@@ -1,7 +1,0 @@
-{
-  "venv": "/projects/env33/bin/python", 
-  "project-type": "Import from sources", 
-  "name": "optimate", 
-  "license": "GNU General Public License v3", 
-  "description": "Optimate client-server project"
-}
