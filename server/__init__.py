@@ -29,6 +29,8 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings)
     config.include('pyramid_chameleon')
-    config.add_route('data', '/')
+    config.add_route('all_data', '/')
+    config.add_route('projects', '/projects')
+    config.add_route('project_data', '/project_data')
     config.scan('.views')
     return config.make_wsgi_app()
