@@ -129,3 +129,15 @@ class ZODBcontrol():
     #zodb = ZODBcontrol()
     #zodb.databasedata()
     #print zodb.getProject("6b3df58c9c9811e49239000c29a3e37c")
+
+
+class RootModel(PersistentMapping):
+    __parent__ = __name__ = None
+
+def appmaker(zodb_root):
+    if not 'db_root' in zodb_root:
+        db_root = RootModel()
+        zodb_root['db_root'] = db_root
+        import transaction
+        transaction.commit()
+    return zodb_root['db_root']

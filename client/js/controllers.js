@@ -56,7 +56,9 @@ costItems.controller
         [
           '$scope', '$http', function($scope, $http)
               {
-                    $http.get('http://127.0.0.1:8080/projects').success
+                    $http.get('http://127.0.0.1:8080/projects',
+                        {headers: {"id": "0"}}
+                        ).success
   	               (
   	                   function(data)
   	                   {

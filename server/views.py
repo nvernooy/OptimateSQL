@@ -82,30 +82,54 @@ def projects(request):
     response.headers["Content-Type"] = "application/json"
     response.headers["Access-Control-Allow-Headers"] =     \
                     "Origin, X-Requested-With, Content-Type, Accept"
-    response.headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE"
+    response.headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS"
+    print request.method
+    # Get the header containing the id for the item requested
+    currentid = request.headers['id']
 
-    # Get the list from the filedata() method and declare an empty list.
     db = ZODBcontrol()
-    preformatlist = db.databasedata()
-    #preformatlist = zodbcontrol.filedata()
-
     JSONlist = []
-    # Iterate through the list and get the Projects.
-    for project in preformatlist:
-        # Add only the Project data to the list
-        JSONlist.insert(len(JSONlist),
-            {"Name": project.Name,
-            "Description": project.Description,
-            "Subitem": [],
-            "ID": project.ID})
+    # # If the id is 0 then it is the root projects requested
+    # if currentid == "0":
+    #     # Get the list from the filedata() method
+    #     preformatlist = db.databasedata()
+    #     #preformatlist = zodbcontrol.filedata()
 
-    # Return the finished list of projects, groups, and items.
-    #pdb.set_trace()
-    db.close()
+    #     # Iterate through the list and get the Projects.
+    #     for project in preformatlist:
+    #         # Add only the Project data to the list
+    #         JSONlist.insert(len(JSONlist),
+    #             {"Name": project.Name,
+    #             "Description": project.Description,
+    #             "Subitem": [],
+    #             "ID": project.ID})
+    # # If the id is not 0 get the next level of items
+    # elif currentid != "0":
+    #     specified_project = db.getProject(currentid)
+
+    #     # Iterate through the Project and get all the data.
+    #     budgetgrouplist = []
+
+    #     for budgetgroup in specified_project.GroupSet:
+    #         # Build each list and then add it to the dictionary
+    #         budgetgrouplist.insert(len(budgetgrouplist),
+    #             {"Name": budgetgroup.Name,
+    #             "Description": budgetgroup.Description,
+    #             "Subitem": [],
+    #             "ID": budgetgroup.ID})
+
+    #     JSONlist.insert(len(JSONlist),
+    #         {"Name": specified_project.Name,
+    #         "Description": specified_project.Description,
+    #         "Subitem": budgetgrouplist,
+    #         "ID": specified_project.ID})
+
+    # # Return the finished list of projects, groups, and items.
+    # db.close()
     return JSONlist
 
 
-@view_config(route_name='project_data', renderer='json')
+@view_config(route_name='projectdata', renderer='json')
 def project_data(request):
     """The method gets a list of the data structures and returns only the
     information of a specified Project
@@ -123,46 +147,37 @@ def project_data(request):
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE"
 
     # Get the project ID from the header
-    projectID = request.headers['ProjectID']
+    projectID = request.headers['id']
+    #projectID = request.query_string()
 
-    # Get the list from the filedata() method and declare an empty list.
-    db = ZODBcontrol()
-    specified_project = db.getProject(projectID)
-    #preformatlist = zodbcontrol.filedata()
+    # # Get the list from the filedata() method and declare an empty list.
+    # db = ZODBcontrol()
+    # specified_project = db.getProject(projectID)
+    # #preformatlist = zodbcontrol.filedata()
 
-    JSONlist = []
-    # Iterate through the Project and get all the data.
-    budgetgrouplist = []
+    # JSONlist = []
+    # # Iterate through the Project and get all the data.
+    # budgetgrouplist = []
 
-    for budgetgroup in specified_project.GroupSet:
-        budgetitemlist = []
+    # for budgetgroup in specified_project.GroupSet:
+    #     # Build each list and then add it to the dictionary
+    #     budgetgrouplist.insert(len(budgetgrouplist),
+    #         {"Name": budgetgroup.Name,
+    #         "Description": budgetgroup.Description,
+    #         "Subitem": [],
+    #         "ID": budgetgroup.ID})
 
-        for budgetitem in budgetgroup.ItemSet:
-            budgetitemlist.insert(len(budgetitemlist),
-                {"Name": budgetitem.Name,
-                "Description": budgetitem.Description,
-                "Quantity": budgetitem.Quantity,
-                "Rate": budgetitem.Rate,
-                "ID": budgetitem.ID,
-                "Subitem": []})
+    # JSONlist.insert(len(JSONlist),
+    #     {"Name": specified_project.Name,
+    #     "Description": specified_project.Description,
+    #     "Subitem": budgetgrouplist,
+    #     "ID": specified_project.ID})
 
-        # Build each list and then add it to the dictionary
-        budgetgrouplist.insert(len(budgetgrouplist),
-            {"Name": budgetgroup.Name,
-            "Description": budgetgroup.Description,
-            "Subitem": budgetitemlist,
-            "ID": budgetgroup.ID})
-
-    JSONlist.insert(len(JSONlist),
-        {"Name": specified_project.Name,
-        "Description": specified_project.Description,
-        "Subitem": budgetgrouplist,
-        "ID": specified_project.ID})
-
-    # Return the finished list of projects, groups, and items.
-    #pdb.set_trace()
-    db.close()
-    return JSONlist
+    # # Return the finished list of projects, groups, and items.
+    # #pdb.set_trace()
+    # print JSONlist
+    # db.close()
+    return {"id": projectID}
 
 
 #if __name__ == "__main__":

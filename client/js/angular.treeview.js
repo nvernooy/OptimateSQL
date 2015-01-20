@@ -22,83 +22,132 @@
 	</div>
 */
 
-// Declare the function used to get project data
+// Angular Treeview template and render
+(function ( angular )
+{
+    'use strict';
+    angular.module( 'angularTreeview', [] ).directive( 'treeModel',
+        [
+            '$compile',
+            function( $compile )
+                {
+                return {
+                    restrict: 'A',
+                    link: function ( scope, element, attrs )
+                    {
+                        //tree id
+                        var treeId = attrs.treeId;
+                        //tree model
+                        var treeModel = attrs.treeModel;
+                        //node id
+                        var nodeId = attrs.nodeId || 'id';
+                        //node label
+                        var nodeLabel = attrs.nodeLabel || 'label';
+                        //children
+                        var nodeChildren = attrs.nodeChildren || 'children';
+                        //description
+                        var nodeDescription = attrs.nodeDescription || 'description';
+                        //tree template
+                        var template =
+                    	'<ul>' +
+                    	    '<li data-ng-repeat="node in ' + treeModel + '">' +
+                    	        '<i class="collapsed" data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
+                    	        '<i class="expanded" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
+                    	        '<i class="normal" data-ng-hide="node.' + nodeChildren + '.length"></i> ' +
+                    	        '<span data-ng-class="node.selected" data-ng-click="' +
+                    	            treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel +
+                    	            '}}</span>' +
+                    	        '<div data-ng-hide="node.collapsed" data-tree-id="' +
+                    	            treeId + '" data-tree-model="node.' + nodeChildren +
+                    	            '" data-node-id=' + nodeId + ' data-node-label=' +
+                    	            nodeLabel + ' data-node-children=' + nodeChildren + '></div>' +
+                    	    '</li>' +
+                    	'</ul>';
 
-(function ( angular ) {
-	'use strict';
 
-	angular.module( 'angularTreeview', [] ).directive( 'treeModel', ['$compile', function( $compile ) {
-		return {
-			restrict: 'A',
-			link: function ( scope, element, attrs ) {
-				//tree id
-				var treeId = attrs.treeId;
-			
-				//tree model
-				var treeModel = attrs.treeModel;
+                        //check tree id, tree model
+                        if( treeId && treeModel )
+                        {
+                            //root node
+                            if( attrs.angularTreeview )
+                            {
+                                //create tree object if not exists
+                                scope[treeId] = scope[treeId] || {};
+                                //if node head clicks,
+                                scope[treeId].selectNodeHead =
+                                    scope[treeId].selectNodeHead ||
+                                    function( selectedNode )
+                                    {
+                                    //Collapse or Expand
+                                    selectedNode.collapsed = !selectedNode.collapsed;
+                                    };
 
-				//node id
-				var nodeId = attrs.nodeId || 'id';
+                                //if node label clicks,
+                                scope[treeId].selectNodeLabel =
+                                    scope[treeId].selectNodeLabel ||
+                                    function( selectedNode )
+                                    {
+                                         console.log ("label clicked");
+                                        //remove highlight from previous node
+                                        if (scope[treeId].currentNode && scope[treeId].currentNode.selected )
+                                        {
+                                        scope[treeId].currentNode.selected = undefined;
+                                        }
 
-				//node label
-				var nodeLabel = attrs.nodeLabel || 'label';
+                                        //set highlight to selected node
+                                        selectedNode.selected = 'selected';
 
-				//children
-				var nodeChildren = attrs.nodeChildren || 'children';
-				
-				//description
-				var nodeDescription = attrs.nodeDescription || 'description';
+                                        //set currentNode
+                                        scope[treeId].currentNode = selectedNode;
 
-				//tree template
-				var template =
-					'<ul>' +
-						'<li data-ng-repeat="node in ' + treeModel + '">' +
-							'<i class="collapsed" data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
-							'<i class="expanded" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
-							'<i class="normal" data-ng-hide="node.' + nodeChildren + '.length"></i> ' +
-							'<span data-ng-class="node.selected" data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}</span>' +
-							'<div data-ng-hide="node.collapsed" data-tree-id="' + treeId + '" data-tree-model="node.' + nodeChildren + '" data-node-id=' + nodeId + ' data-node-label=' + nodeLabel + ' data-node-children=' + nodeChildren + '></div>' +
-						'</li>' +
-					'</ul>';
+                                        // Get children of selected node
+                                        // Request to server with ID in header
+                                        var response;
+
+                                        var xmlhttp = new XMLHttpRequest();
+                                        var url = "http://127.0.0.1:8080/projects";
+                                        console.log (url);
+                                        xmlhttp.onreadystatechange = function() {
+                                            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                                                var myArr = JSON.parse(xmlhttp.responseText);
+                                                console.log(myArr);
+                                                }
+                                        }
+
+                                        xmlhttp.open("GET", url, true);
+                                        xmlhttp.setRequestHeader("id", scope[treeId].currentNode.ID);
+                                        xmlhttp.send();
 
 
-				//check tree id, tree model
-				if( treeId && treeModel ) {
 
-					//root node
-					if( attrs.angularTreeview ) {
-					
-						//create tree object if not exists
-						scope[treeId] = scope[treeId] || {};
+                                        /*var children = angular.module('getChildren', []);
+                                        children.controller('childrenControl',
+                                        [
+                                            '$scope', '$http', function($scope, $http)
+                                            {
+                                                $http.get('http://127.0.0.1:8080/project_data',
+                                                {
+                                                    headers: {'ProjectID': scope[treeId].currentNode.ID}
+                                                }).success
+                                                (function(data)
+                                                     {
+                                                        response = data;
+                                                     //scope[treeId].currentNode.Subitem = data;
+                                                    }
 
-						//if node head clicks,
-						scope[treeId].selectNodeHead = scope[treeId].selectNodeHead || function( selectedNode ){
+                                                );
+                                        }]);*/
+                                        console.log(response);
+                                        console.log(scope);
 
-							//Collapse or Expand
-							selectedNode.collapsed = !selectedNode.collapsed;
-						};
 
-						//if node label clicks,
-						scope[treeId].selectNodeLabel = scope[treeId].selectNodeLabel || function( selectedNode ){
-
-							//remove highlight from previous node
-							if( scope[treeId].currentNode && scope[treeId].currentNode.selected ) {
-								scope[treeId].currentNode.selected = undefined;
-							}
-
-							//set highlight to selected node
-							selectedNode.selected = 'selected';
-							projectData(selectedNode.nodeId);
-
-							//set currentNode
-							scope[treeId].currentNode = selectedNode;
-						};
-					}
-
-					//Rendering template.
-					element.html('').append( $compile( template )( scope ) );
-				}
-			}
-		};
-	}]);
+                                    };
+                            }
+                            //Rendering template.
+                            //element.html('').append( $compile( template )( scope ) );
+                             selectedNode.html('').append( $compile( template )( scope[treeId] ) );
+                        }
+                    }
+                };
+            }]);
 })( angular );

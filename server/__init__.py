@@ -8,6 +8,11 @@ from pyramid.events import NewResponse
 from pyramid.events import subscriber
 
 
+def root_factory(request):
+    conn = get_connection(request)
+    return appmaker(conn.root())
+
+
 @subscriber(NewResponse)
 def handleResponse(event):
     """Create a new request factory,
@@ -27,10 +32,11 @@ def handleResponse(event):
 def main(global_config, **settings):
     """Configure the requirements and html routes for the server."""
 
-    config = Configurator(settings=settings)
+    config = Configurator(root_factory=root_factory, settings=settings)
     config.include('pyramid_chameleon')
+    config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('all_data', '/')
     config.add_route('projects', '/projects')
-    config.add_route('project_data', '/project_data')
+    config.add_route('projectdata', '/project_data')
     config.scan('.views')
     return config.make_wsgi_app()
