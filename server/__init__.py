@@ -12,6 +12,7 @@ from models import appmaker
 
 
 def root_factory(request):
+    """Make the ZODB connection and get the root from appmaker."""
     conn = get_connection(request)
     return appmaker(conn.root())
 
@@ -33,7 +34,9 @@ def handleResponse(event):
 
 
 def main(global_config, **settings):
-    """Configure the requirements and html routes for the server."""
+    """Configure the requirements for the server.
+    The root factory returns the zodb root
+    """
 
     config = Configurator(root_factory=root_factory, settings=settings)
     config.include('pyramid_zodbconn')
