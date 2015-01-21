@@ -31,7 +31,7 @@
             link: function ( scope, element, attrs ) {
                 //tree id
                 var treeId = attrs.treeId;
-            
+
                 //tree model
                 var treeModel = attrs.treeModel;
 
@@ -62,7 +62,7 @@
 
                     //root node
                     if( attrs.angularTreeview ) {
-                    
+
                         //create tree object if not exists
                         scope[treeId] = scope[treeId] || {};
 
@@ -86,6 +86,19 @@
 
                             //set currentNode
                             scope[treeId].currentNode = selectedNode;
+
+                            console.log("Label clicked");
+                            // get path from parentid in node
+                            // and go to that path with http
+                            // console.log ("Sending http request");
+                            // http.get('http://127.0.0.1:8080'+'/1').success
+                            // (
+                            //     function(data)
+                            //         {
+                            //             scope.roleList = data;
+                            //         }
+                            // );
+                            // console.log("Htpp request success: "+scope.roleList);
                         };
                     }
 

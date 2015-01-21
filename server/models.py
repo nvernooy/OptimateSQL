@@ -29,9 +29,12 @@ class RootModel(dict):
 class Project(dict):
     __parent__ = RootModel
 
-    def __init__(self, children, id):
+    def __init__(self, children, nam, desc):
         self.budgetgroups = children
-        self.__name__ = id
+        self.Name = nam
+        self.Description = desc
+        self.ID = "1"
+        self.__name__ = self.ID
 
     def __getitem__ (self, key):
         budgetgroup = self.budgetgroups[key]
@@ -50,21 +53,24 @@ class Project(dict):
     #     """This enables the class to be hashable, it uses the unique ID"""
     #     return self.__name__ == other.__name__
 
-    def __str__(self):
-        """
-        The toString method returns a string of the name and
-        description of the class.
-        If the set is not empty thereafter it prints
-        all the BudgetGroups in the set.
-        """
-        return "Project: " +self.__name__
+    # def __str__(self):
+    #     """
+    #     The toString method returns a string of the name and
+    #     description of the class.
+    #     If the set is not empty thereafter it prints
+    #     all the BudgetGroups in the set.
+    #     """
+    #     return "Project: " +self.__name__
 
 
 
 class BudgetGroup(dict):
-    def __init__(self, children, id, parentid):
+    def __init__(self, children, nam, desc, parentid):
         self.budgetitems = children
-        self.__name__ = id
+        self.Name = nam
+        self.Description = desc
+        self.ID = "1.1"
+        self.__name__ = self.ID
         self.__parent__ = parentid
 
     def __getitem__ (self, key):
@@ -82,23 +88,28 @@ class BudgetGroup(dict):
     #     """This enables the class to be hashable, it uses the unique ID"""
     #     return self.__name__ == other.__name__
 
-    def __str__(self):
-        """
-        The toString method returns a string of the name and
-        description of the class.
-        If the set is not empty thereafter it prints
-        all the BudgetGroups in the set.
-        """
+    # def __str__(self):
+    #     """
+    #     The toString method returns a string of the name and
+    #     description of the class.
+    #     If the set is not empty thereafter it prints
+    #     all the BudgetGroups in the set.
+    #     """
 
-        return "BudgetGroup: " +self.__name__
+    #     return "BudgetGroup: " +self.__name__
 
 
 
 class BudgetItem(dict):
 
-    def __init__(self, id, parent):
-        self.__name__ = id
-        self.__parent__ = parent
+    def __init__(self, nam, desc, quan, rate, parentid):
+        self.Name = nam
+        self.Description = desc
+        self.Quantity = quan
+        self.Rate = rate
+        self.ID = "1.1.1"
+        self.__name__ = self.ID
+        self.__parent__ = parentid
 
     # def __hash__(self):
     #     """This enables the class to be hashable, it uses the unique ID"""
@@ -108,15 +119,15 @@ class BudgetItem(dict):
     #     """This enables the class to be hashable, it uses the unique ID"""
     #     return self.__name__ == other.__name__
 
-    def __str__(self):
-        """
-        The toString method returns a string of the name and
-        description of the class.
-        If the set is not empty thereafter it prints
-        all the BudgetGroups in the set.
-        """
+    # def __str__(self):
+    #     """
+    #     The toString method returns a string of the name and
+    #     description of the class.
+    #     If the set is not empty thereafter it prints
+    #     all the BudgetGroups in the set.
+    #     """
 
-        return "BudgetItem: " +self.__name__
+    #     return "BudgetItem: " +self.__name__
 
 
 # appmakes checks if the root exists in the database
@@ -129,16 +140,16 @@ def appmaker(zodb_root):
     """
 
     if not 'app_root' in zodb_root:
-        budgetitem = BudgetItem("1.1.1", "1.1")
-        bidict = {"1.1.1":budgetitem}
+        print "building the db again"
+        budgetitem = BudgetItem("BIName", "BIDesc", 10, 5, "1.1")
+        bidict = {budgetitem.ID:budgetitem}
 
-        budgetgroup = BudgetGroup(bidict, "1.1", "1")
-        bgdict = {"1.1":budgetgroup}
+        budgetgroup = BudgetGroup(bidict, "BGName", "BGDesc", "1")
+        bgdict = {budgetgroup.ID:budgetgroup}
 
-        project = Project(bgdict, "1")
-        project2 = Project({}, "2")
+        project = Project(bgdict, "PName", "PDesc")
 
-        app_root = RootModel({"1":project, "2":project2})
+        app_root = RootModel({project.ID:project})
 
         # project.__parent__ = app_root
         # project2.__parent__ = app_root
