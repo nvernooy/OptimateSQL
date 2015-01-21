@@ -20,8 +20,8 @@ costItems.controller
     ]
 );*/
 
-// Get all Optimate data with angular treeview
-/*
+// Get all Optimate data with angular treeview using traversal
+
 (function(){
     "use strict";
   //angular module
@@ -43,59 +43,59 @@ costItems.controller
         ]
     );
 })();
-*/
 
-// Return only the Project data
-(function(){
-    "use strict";
-  //angular module
-  var myApp = angular.module('myApp', ['angularTreeview']);
 
-  //test controller
-  myApp.controller('myController',
-        [
-          '$scope', '$http', function($scope, $http)
-              {
-                    $http.get('http://127.0.0.1:8080/projects',
-                        {headers: {"id": "0"}}
-                        ).success
-  	               (
-  	                   function(data)
-  	                   {
-  	                       $scope.roleList = data;
-                            }
-                        );
-              }
-        ]
-    );
-})();
+// Return only the Project data with id 0 using headers
+// (function(){
+//     "use strict";
+//   //angular module
+//   var myApp = angular.module('myApp', ['angularTreeview']);
+
+//   //test controller
+//   myApp.controller('myController',
+//         [
+//           '$scope', '$http', function($scope, $http)
+//               {
+//                     $http.get('http://127.0.0.1:8080/projects'
+//                         ,{headers: {"id": "0"}}
+//                         ).success
+//   	               (
+//   	                   function(data)
+//   	                   {
+//   	                       $scope.roleList = data;
+//                             }
+//                         );
+//               }
+//         ]
+//     );
+// })();
 
 
 // Return the data of a specified Project
-function project_data(project_id){
-  "use strict";
-  //angular module
-  var projectdataApp = angular.module('projectdataApp', ['angularTreeview']);
+// function project_data(project_id){
+//   "use strict";
+//   //angular module
+//   var projectdataApp = angular.module('projectdataApp', ['angularTreeview']);
 
-  //test controller
-  projectdataApp.controller('projectdataControl',
-        [
-          '$scope', '$http', function($scope, $http)
-              {
-                    $http.get('http://127.0.0.1:8080/project_data',
-                                {
-                                    headers: {'ProjectID': project_id}
-                                }).success
-  	               (
-  	                   function(data)
-  	                   {
-  	                       $scope.roleList = data;
-                            }
-                        );
-              }
-        ]
-    );
-}
+//   //test controller
+//   projectdataApp.controller('projectdataControl',
+//         [
+//           '$scope', '$http', function($scope, $http)
+//               {
+//                     $http.get('http://127.0.0.1:8080/project_data',
+//                                 {
+//                                     headers: {'ProjectID': project_id}
+//                                 }).success
+//   	               (
+//   	                   function(data)
+//   	                   {
+//   	                       $scope.roleList = data;
+//                             }
+//                         );
+//               }
+//         ]
+//     );
+// }
 
 /*
 	@license Angular Treeview version 0.1.6

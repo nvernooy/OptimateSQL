@@ -58,3 +58,9 @@ target/
 
 # Ubuntu temp files
 *~
+
+# Sublime project files
+*.sublime*
+
+# Ninja files
+*.nja
