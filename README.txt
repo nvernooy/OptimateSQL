@@ -7,6 +7,6 @@ Current instructions:
     In the optimate directory run $ python setup.py develop
                                   $ pserve development.ini --reload
   To start the client:
-    In the client directory run $ npm start
+    In the client directory open index.html
     
   Visit http://localhost:8000/app/index.html to see the JSON data displayed.
