@@ -83,11 +83,10 @@
 
                             //set highlight to selected node
                             selectedNode.selected = 'selected';
+                            console.log("Node clicked");
 
                             //set currentNode
                             scope[treeId].currentNode = selectedNode;
-
-                            console.log("Label clicked");
                             // get path from parentid in node
                             // and go to that path with http
                             // console.log ("Sending http request");
@@ -99,12 +98,54 @@
                             //         }
                             // );
                             // console.log("Htpp request success: "+scope.roleList);
+                            var xmlhttp = new XMLHttpRequest();
+
+                            var path = "";
+                            // Get path
+                            if (scope[treeId].currentNode.Parent == "0"){
+                                path = scope[treeId].currentNode.ID;
+                            }
+                            else{
+                                path =  scope[treeId].currentNode.Parent + "/" + scope[treeId].currentNode.ID;
+                            }
+
+                            console.log(path);
+                            var url = "http://127.0.0.1:8080/"+path;
+                            var response;
+                            xmlhttp.onreadystatechange = function() {
+                                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                                    response = JSON.parse(xmlhttp.responseText);
+
+                                    // for (var key in response[0]){
+                                    //     console.log(key + ": " + response[0][key] );
+                                    // }
+
+                                    console.log(scope[treeId].currentNode);
+                                    scope[treeId].currentNode.Subitem = response;
+                                    console.log(scope[treeId].currentNode.Subitem);
+                                    console.log(scope[treeId].currentNode);
+                                    // //Rendering template again.
+                                    // element.html('').append( $compile( template )( scope ) );
+                                }
+                            };
+                            +
+                            xmlhttp.open("GET", url, true);
+                            xmlhttp.send();
+                             // console.log(response);
+                            // scope[treeId] = response;
+
                         };
                     }
 
                     //Rendering template.
                     element.html('').append( $compile( template )( scope ) );
+
+                    console.log("rendering complete");
+                    console.log(scope[treeId]);
                 }
+                else{
+                console.log("Treeid not treemodel");
+            }
             }
         };
     }]);

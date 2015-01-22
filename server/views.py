@@ -12,20 +12,104 @@ from models import RootModel, Project, BudgetGroup, BudgetItem
 
 # This view is for when the RootModel is the context
 # It formats the project information in RootModel to be usable by angular treeview
-# So far it only returns a list of the projectids
+# So far it only returns a list of the projectids no further information about the projects
 @view_config(context=RootModel, renderer='json')
 def rootview(context, request):
     # get the projects from the context
     data = context.__dict__
 
-    projectidlist = []
+    # for item in data.items():
+    #     print item
+
+    childrenlist = []
     for key in data["projects"].keys():
-        projectidlist.insert(len(projectidlist), {"Name":key, "Description":key, "Subitem":[], "ID":key})
+        childrenlist.insert(len(childrenlist), {"Name":key, "Description":key, "Subitem":[], "ID":key, "Parent": "0"})
+
+    for item in childrenlist:
+        print item
+    #projects = data["data"]["Project"]
+    # JSON expects the data to be a dictionary in a list
+    #JSONlist = [data]
+    #return JSONlist
+    return childrenlist
+
+# @view_config(route_name = 'children', context=RootModel, renderer='json')
+# def rootview(context, request):
+#     # get the projects from the context
+#     data = context.__dict__
+
+#     for item in data.items():
+#         print item
+
+#     childrenlist = []
+#     for key in data["projects"].keys():
+#         childrenlist.insert(len(childrenlist), {"Name":key, "Description":key, "Subitem":[], "ID":key})
+
+
+#     #projects = data["data"]["Project"]
+#     # JSON expects the data to be a dictionary in a list
+#     #JSONlist = [data]
+#     return childrenlist
+
+
+@view_config(context=Project, renderer='json')
+def projectview(context, request):
+    # get the projects from the context
+    data = context.__dict__
+
+    # for item in data.items():
+    #     print item
+
+    childrenlist = []
+    for key in data["budgetgroups"].keys():
+        childrenlist.insert(len(childrenlist), {"Name":key, "Description":key, "Subitem":[], "ID":key, "Parent": data["ID"]})
+
+    for item in childrenlist:
+        print item
 
     #projects = data["data"]["Project"]
     # JSON expects the data to be a dictionary in a list
     #JSONlist = [data]
-    return projectidlist
+    return childrenlist
+
+
+@view_config(context=BudgetGroup, renderer='json')
+def budgetgroupview(context, request):
+    # get the projects from the context
+    data = context.__dict__
+
+    # for item in data.items():
+    #     print item
+
+    childrenlist = []
+    for key in data["budgetitems"].keys():
+        childrenlist.insert(len(childrenlist), {"Name":key, "Description":key, "Subitem":[], "ID":key, "Parent": data["ID"]})
+
+    for item in childrenlist:
+        print item
+
+    #projects = data["data"]["Project"]
+    # JSON expects the data to be a dictionary in a list
+    #JSONlist = [data]
+    return childrenlist
+
+@view_config(context=BudgetItem, renderer='json')
+def budgetitemview(context, request):
+    # get the projects from the context
+    data = context.__dict__
+
+    # for item in data.items():
+    #     print item
+
+    childrenlist = [{"Parent": data["ID]"]}]
+
+    for item in childrenlist:
+        print item
+
+    #projects = data["data"]["Project"]
+    # JSON expects the data to be a dictionary in a list
+    #JSONlist = [data]
+    return childrenlist
 
 # Return all the data
 # The context is dependant on the object returned on the traversal
