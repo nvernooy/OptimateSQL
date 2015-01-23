@@ -1,6 +1,8 @@
 # Models file contains resources used in the project
 from persistent import Persistent
 from persistent.mapping import PersistentMapping
+from BTrees.OOBTree import OOSet
+import uuid
 
 # The classes used in models only inherit from dict
 # The contsructor takes a dictionary of the children, parent id, and name as an id
@@ -11,128 +13,80 @@ from persistent.mapping import PersistentMapping
 #     __name__ = None
 #     __parent__ = None
 
-class RootModel(dict):
+class RootModel(PersistentMapping):
     __name__ = None
     __parent__ = None
 
-    def __init__(self, children):
-        self.projects = children
+    def __init__(self, children = OOSet()):
+        self.Subitem = children
+        self.ID = "0"
+
+    def addSet (self, children):
+        self.Subitem = children
 
     def __getitem__ (self, key):
-        project = self.projects[key]
+        child = self.Subitem[key]
 
-        if project != None:
-            return project
+        if child != None:
+            return child
         else:
             raise KeyError
 
-class Project(dict):
-    __parent__ = RootModel
+class Project(PersistentMapping):
+    __parent__ = "0"
 
-    def __init__(self, children, nam, desc):
+    def __init__(self, nam, desc, children = OOSet()):
         self.budgetgroups = children
         self.Name = nam
         self.Description = desc
-        self.ID = "1"
+        self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
         self.__name__ = self.ID
 
-    def __getitem__ (self, key):
-        budgetgroup = self.budgetgroups[key]
+    def addSet (self, children):
+        self.Subitem = children
 
-        if budgetgroup != None:
-            return budgetgroup
+    def __getitem__ (self, key):
+        child = self.Subitem[key]
+
+        if child != None:
+            return child
         else:
             raise KeyError
 
 
-    # def __hash__(self):
-    #     """This enables the class to be hashable, it uses the unique ID"""
-    #     return self.__name__
-
-    # def __eq__(self, other):
-    #     """This enables the class to be hashable, it uses the unique ID"""
-    #     return self.__name__ == other.__name__
-
-    # def __str__(self):
-    #     """
-    #     The toString method returns a string of the name and
-    #     description of the class.
-    #     If the set is not empty thereafter it prints
-    #     all the BudgetGroups in the set.
-    #     """
-    #     return "Project: " +self.__name__
-
-
-
-class BudgetGroup(dict):
-    def __init__(self, children, nam, desc, parentid):
-        self.budgetitems = children
+class BudgetGroup(PersistentMapping):
+    def __init__(self, nam, desc, parentid, children = OOSet()):
+        self.Subitem = children
         self.Name = nam
         self.Description = desc
-        self.ID = "1.1"
+        self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
         self.__name__ = self.ID
         self.__parent__ = parentid
 
+    def addSet (self, children):
+        self.Subitem = children
+
     def __getitem__ (self, key):
-        budgetitem = self.budgetitems[key]
-        if budgetitem!= None:
-            return budgetitem
+        child = self.Subitem[key]
+
+        if child != None:
+            return child
         else:
             raise KeyError
 
-    # def __hash__(self):
-    #     """This enables the class to be hashable, it uses the unique ID"""
-    #     return self.__name__
 
-    # def __eq__(self, other):
-    #     """This enables the class to be hashable, it uses the unique ID"""
-    #     return self.__name__ == other.__name__
-
-    # def __str__(self):
-    #     """
-    #     The toString method returns a string of the name and
-    #     description of the class.
-    #     If the set is not empty thereafter it prints
-    #     all the BudgetGroups in the set.
-    #     """
-
-    #     return "BudgetGroup: " +self.__name__
-
-
-
-class BudgetItem(dict):
+class BudgetItem(PersistentMapping):
 
     def __init__(self, nam, desc, quan, rate, parentid):
         self.Name = nam
         self.Description = desc
         self.Quantity = quan
         self.Rate = rate
-        self.ID = "1.1.1"
+        self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
         self.__name__ = self.ID
         self.__parent__ = parentid
 
-    # def __hash__(self):
-    #     """This enables the class to be hashable, it uses the unique ID"""
-    #     return self.__name__
 
-    # def __eq__(self, other):
-    #     """This enables the class to be hashable, it uses the unique ID"""
-    #     return self.__name__ == other.__name__
-
-    # def __str__(self):
-    #     """
-    #     The toString method returns a string of the name and
-    #     description of the class.
-    #     If the set is not empty thereafter it prints
-    #     all the BudgetGroups in the set.
-    #     """
-
-    #     return "BudgetItem: " +self.__name__
-
-
-# appmakes checks if the root exists in the database
-# if not it rebuilds the database.
-# Currently the data is hardcoded
 def appmaker(zodb_root):
     """appmaker gets the ZODB connection and checks if there is anything in the root.
     If there isn't then the database is built.
@@ -140,15 +94,19 @@ def appmaker(zodb_root):
     """
 
     if not 'app_root' in zodb_root:
-        print "building the db again"
-        budgetitem = BudgetItem("BIName", "BIDesc", 10, 5, "1.1")
-        bidict = {budgetitem.ID:budgetitem}
 
-        budgetgroup = BudgetGroup(bidict, "BGName", "BGDesc", "1")
-        bgdict = {budgetgroup.ID:budgetgroup}
+        # Build the Projects
+        project = Project("PName", "PDesc")
 
-        project = Project(bgdict, "PName", "PDesc")
+        # Build the next level in the hierarchy
+        budgetgroup = BudgetGroup("BGName", "BGDesc", project.ID)
 
+        # Build the next level
+        budgetitem = BudgetItem("BIName", "BIDesc", 10, 5, budgetgroup.ID)
+
+        # Build the hierarchy
+        budgetgroup.addSet({budgetitem.ID:budgetitem})
+        project.addSet({budgetgroup.ID:budgetgroup})
         app_root = RootModel({project.ID:project})
 
         # project.__parent__ = app_root

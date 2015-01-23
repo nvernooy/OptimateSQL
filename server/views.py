@@ -18,8 +18,8 @@ def rootview(context, request):
     # get the projects from the context
     data = context.__dict__
 
-    # for item in data.items():
-    #     print item
+    for item in data.items():
+         print item
 
     childrenlist = []
     for key in data["projects"].keys():
