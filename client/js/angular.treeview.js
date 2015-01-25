@@ -22,10 +22,12 @@
     </div>
 */
 
+
+
 (function ( angular ) {
     'use strict';
-
-    angular.module( 'angularTreeview', [] ).directive( 'treeModel', ['$compile', function( $compile ) {
+    //angular.module( 'angularTreeview', [] ).directive( 'treeModel', ['$compile', '$apply', function( $compile, $apply ) {
+    angular.module( 'angularTreeview', [] ).directive( 'treeModel', ['$compile', function( $compile) {
         return {
             restrict: 'A',
             link: function ( scope, element, attrs ) {
@@ -87,19 +89,8 @@
 
                             //set currentNode
                             scope[treeId].currentNode = selectedNode;
-                            // get path from parentid in node
-                            // and go to that path with http
-                            // console.log ("Sending http request");
-                            // http.get('http://127.0.0.1:8080'+'/1').success
-                            // (
-                            //     function(data)
-                            //         {
-                            //             scope.roleList = data;
-                            //         }
-                            // );
-                            // console.log("Htpp request success: "+scope.roleList);
-                            var xmlhttp = new XMLHttpRequest();
 
+                            // get the url path from the node and it's parent
                             var path = "";
                             // Get path
                             if (scope[treeId].currentNode.Parent == "0"){
@@ -109,31 +100,51 @@
                                 path =  scope[treeId].currentNode.Parent + "/" + scope[treeId].currentNode.ID;
                             }
 
-                            console.log(path);
-                            var url = "http://127.0.0.1:8080/"+path;
-                            var response;
+                            // try to get $http working using $apply
+                            // get path from parentid in node
+                            // and go to that path with http
+                        //     setTimeout(function()scope.$apply(function() {
+                        //     console.log ("Sending http request");
+                        //     $http.get('http://127.0.0.1:8080'+path).success
+                        //     (
+                        //         function(data)
+                        //             {
+                        //                 console.log("Htpp request success: "+ data);
+                        //             }
+                        //     );
+
+                        // });
+
+                            // // Trying to get it working using timeout
+                            // setTimeout(function()
+                            //     { $apply(function()
+                            //         {
+                            //            $http.get('http://127.0.0.1:8080'+path).success
+                            //             (
+                            //                 function(data)
+                            //                     {
+                            //                         console.log("Htpp request success: "+ data);
+                            //                     }
+                            //             );
+                            //         } ) ;
+                            // });
+
+
+
+                            // Try to get $http working using broadcast
+                            // $rootScope.$broadcast('labelClickedEvent');
+
+
+                            // Getting request to work using xmlhttp
+                            var xmlhttp = new XMLHttpRequest();
                             xmlhttp.onreadystatechange = function() {
                                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                                    response = JSON.parse(xmlhttp.responseText);
-
-                                    // for (var key in response[0]){
-                                    //     console.log(key + ": " + response[0][key] );
-                                    // }
-
-                                    console.log(scope[treeId].currentNode);
-                                    scope[treeId].currentNode.Subitem = response;
-                                    console.log(scope[treeId].currentNode.Subitem);
-                                    console.log(scope[treeId].currentNode);
-                                    // //Rendering template again.
-                                    // element.html('').append( $compile( template )( scope ) );
+                                    // Append the response data to the subitem (chilren) of the current node
+                                    scope[treeId].currentNode.Subitem =  JSON.parse(xmlhttp.responseText);
                                 }
                             };
-                            +
-                            xmlhttp.open("GET", url, true);
+                            xmlhttp.open("GET", "http://127.0.0.1:8080/"+path, true);
                             xmlhttp.send();
-                             // console.log(response);
-                            // scope[treeId] = response;
-
                         };
                     }
 
@@ -143,10 +154,17 @@
                     console.log("rendering complete");
                     console.log(scope[treeId]);
                 }
-                else{
-                console.log("Treeid not treemodel");
-            }
             }
         };
     }]);
 })( angular );
+
+// $rootScope.$on('labelClickedEvent', function () {
+//               http.get('http://127.0.0.1:8080'+scope[treeId].currentNode.ID).success
+//                             (
+//                                 function(data)
+//                                     {
+//                                         console.log("Htpp request success: "+ data);
+//                                     }
+//                             );
+//         })
