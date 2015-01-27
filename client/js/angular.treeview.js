@@ -21,10 +21,12 @@
 
 (function ( angular ) {
     'use strict';
-    var optimateApp = angular.module( 'angularTreeview', [] );
+    // var optimateApp = angular.module( 'angularTreeview', [] );
 
     // Add the right click directive
     // optimateApp.directive(
+    angular.module( 'angularTreeview', [] )
+    // .directive(
     //     'ngRightClick', function($parse)
     //         {
     //         return function(scope, element, attrs) {
@@ -40,7 +42,8 @@
     // )
 
     // Add the treeview directive
-    optimateApp.directive(
+    // optimateApp.directive(
+    .directive(
         'treeModel', ['$compile', '$http', function( $compile, $http ) {
             return {
                 restrict: 'A',
