@@ -15,8 +15,8 @@ class RootModel(Persistent):
     __name__ = None
     __parent__ = None
 
-    def __init__(self, children = OOBTree()):
-        self.Subitem = children
+    def __init__(self):
+        self.Subitem = OOBTree()
         self.ID = "0"
 
     def addSet (self, children):
@@ -61,8 +61,8 @@ class Project(Persistent):
 
     __parent__ = "0"
 
-    def __init__(self, nam, desc, children = OOBTree()):
-        self.Subitem = children
+    def __init__(self, nam, desc):
+        self.Subitem = OOBTree()
         self.Name = nam
         self.Description = desc
         self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
@@ -90,7 +90,7 @@ class Project(Persistent):
         all the items in the set.
         """
 
-        output = self.Name + ": " + self.Description + ", " + self.ID
+        output = self.Name + ": " + self.Description + ", " + self.ID+ ", " + self.__parent__
         if self.Subitem is not None:
             for key in self.Subitem.keys():
                 output += ("\n\t" + str(self.Subitem[key]))
@@ -106,8 +106,8 @@ class BudgetGroup(Persistent):
     It implements the __getitem__ method
     """
 
-    def __init__(self, nam, desc, parentid, children = OOBTree()):
-        self.Subitem = children
+    def __init__(self, nam, desc, parentid):
+        self.Subitem = OOBTree()
         self.Name = nam
         self.Description = desc
         self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
@@ -136,7 +136,7 @@ class BudgetGroup(Persistent):
         all the items in the set.
         """
 
-        output = self.Name + ": " + self.Description + ", " + self.ID
+        output = self.Name + ": " + self.Description + ", " + self.ID+ ", " + self.__parent__
         if self.Subitem is not None:
             for key in self.Subitem.keys():
                 output += ("\n\t\t" + str(self.Subitem[key]))
@@ -167,7 +167,7 @@ class BudgetItem(Persistent):
         budgetitem
         """
 
-        return self.Name + ": " + self.Description + ", " + self.ID
+        return self.Name + ": " + self.Description + ", " + self.ID + ", " + self.__parent__
 
 
 def appmaker(zodb_root):
@@ -233,31 +233,29 @@ def appmaker(zodb_root):
             datafile.close()
 
             for project in projectlist:
-                print project
                 app_root.addItem(project.ID,project)
 
         # If it does not exist build the DB with hardcoded data
         else:
-            # Build the Projects
+            #Build the Projects
             project = Project("PName", "PDesc")
             projectb = Project("BPName", "BPDesc")
 
             # Build the next level in the hierarchy
             budgetgroup = BudgetGroup("BGName", "BGDesc", project.ID)
-            budgetgroupb = BudgetGroup("BBGName", "BBGDesc", project.ID)
+            budgetgroupb = BudgetGroup("BBGName", "BBGDesc", projectb.ID)
 
             # Build the next level
             budgetitem = BudgetItem("BIName", "BIDesc", 10, 5, budgetgroup.ID)
-            budgetitemb = BudgetItem("BBIName", "BBIDesc", 4, 20, budgetgroup.ID)
+            budgetitemb = BudgetItem("BBIName", "BBIDesc", 4, 20, budgetgroupb.ID)
 
             # Build the hierarchy
             budgetgroup.addItem(budgetitem.ID,budgetitem)
-            budgetgroupb.addItem(budgetitemb.ID, budgetitemb)
-
             project.addItem(budgetgroup.ID,budgetgroup)
-            projectb.addItem(budgetgroupb.ID, budgetgroupb)
-
             app_root.addItem(project.ID,project)
+
+            budgetgroupb.addItem(budgetitemb.ID, budgetitemb)
+            projectb.addItem(budgetgroupb.ID, budgetgroupb)
             app_root.addItem(projectb.ID, projectb)
 
         # Add the root the the ZODB
