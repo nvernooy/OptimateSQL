@@ -71,12 +71,24 @@
                                 '<i class="expanded" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
                                 '<i class="normal" data-ng-hide="node.' + nodeChildren + '.length"></i> ' +
                                 '<span data-ng-class="node.selected" data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}</span>' +
-                                // Do the right click thing
-                                // '<span data-ng-class="node.selectedRightClicked" data-ng-right-click="' + treeId + '.selectNodeLabelRightClicked(node)">{{node.' + nodeLabel + '}}</span>' +
-
                                 '<div data-ng-hide="node.collapsed" data-tree-id="' + treeId + '" data-tree-model="node.' + nodeChildren + '" data-node-id=' + nodeId + ' data-node-label=' + nodeLabel + ' data-node-children=' + nodeChildren + '></div>' +
                             '</li>' +
-                        '</ul>';
+                        '</ul>' +
+                        '<div class="menu-bar">'+
+                              '<ul>'+
+                               ' <li>'+
+                                  '<p>+</p>'+
+                                  '<ul>'+
+                                   ' <li>'+
+                                        '<p>Add<p>'+
+                                        '<p>Edit</p>'+
+                                        '<p>Delete</p>'+
+                                        '<p>Copy</p>'+
+                                    '</li>'+
+                                 ' </ul>'+
+                                '</li>'+
+                              '</ul>'+
+                            '</div>';
 
 
                     //check tree id, tree model

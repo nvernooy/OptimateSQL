@@ -1,3 +1,18 @@
+/* Adding hover effect*/
+   .ng-binding:hover:after {
+    content: "+";
+   }
+
+/* Tutorial drop down menu */
+div.menu-bar ul ul {
+  display: none;
+}
+
+div.menu-bar li:hover > ul {
+  display: block;
+}
+
+/* Treeview mode */
 div[data-angular-treeview] {
   /* prevent user selection */
   -moz-user-select: -moz-none;
@@ -44,6 +59,8 @@ div[data-tree-model] li .normal {
   background-image: url("../img/file.png");
   background-repeat: no-repeat;
 }
+
+
 
 div[data-tree-model] li i, div[data-tree-model] li span {
   cursor: pointer;

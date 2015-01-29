@@ -7,11 +7,12 @@ of the cost estimate items
 
 from pyramid.view import view_config
 from pyramid.response import Response
-from models import RootModel, Node, Leaf
+from models import RootModel, Project, BudgetGroup, BudgetItem
 
 @view_config(context=RootModel, renderer='json')
-@view_config(context=Node, renderer='json')
-@view_config(context=Leaf, renderer='json')
+@view_config(context=Project, renderer='json')
+@view_config(context=BudgetGroup, renderer='json')
+@view_config(context=BudgetItem, renderer='json')
 def childview(context, request):
     """
     This view is for when the user requests the children of an item.
