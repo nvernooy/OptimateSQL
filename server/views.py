@@ -8,6 +8,10 @@ of the cost estimate items
 from pyramid.view import view_config
 from pyramid.response import Response
 from models import RootModel, Project, BudgetGroup, BudgetItem
+from models import appmaker
+from pyramid_zodbconn import get_connection
+from persistent import Persistent
+
 
 @view_config(context=RootModel, renderer='json')
 @view_config(context=Project, renderer='json')
@@ -19,10 +23,103 @@ def childview(context, request):
      It uses any of the obejcts as it's context, it extracts the subitem (children) from the object,
      adds it to a list and returns it to the JSON renderer
     """
+    if request.method == 'POST':
+        data = request.json_body
 
-    childrenlist = []
-    for key in context.Subitem.keys():
-        childrenlist.insert(len(childrenlist), {"Name":context.Subitem[key].Name, "Description":context.Subitem[key].Description,
-            "Subitem":[], "ID":context.Subitem[key].ID, "Parent": context.Subitem[key].__parent__})
+        print data.items()
+        print (data['Parent'] == '0')
+        conn = get_connection(request)
+        app_root = appmaker(conn.root())
 
-    return childrenlist
+        # If the Parent ID is 0 then it is a Project item
+        # Follow the path and add a BudgetGroup item
+        if data['Parent'] == '0':
+            print "adding to project"
+            bg = BudgetGroup("TestBG", "TestBG Description", data['ID'])
+            app_root[data['ID']].addItem(bg.ID, bg)
+
+        # If the Parent ID is not 0 then it is a BudgetGroup item
+        # Follow the path and add a BudgetItem item
+        else:
+            print  "adding to budgetgroup"
+            bi = BudgetItem("TestBI", "TestBI Description", data['ID'])
+            app_root[data['Parent']][data['ID']].addItem(bi.ID, bi)
+
+        print "commiting transaction"
+        conn.root()['app_root'] = app_root
+        import transaction
+        transaction.commit()
+
+        print "returning success"
+        return {"success" : True}
+
+    else:
+        childrenlist = []
+        for key in context.Subitem.keys():
+            childrenlist.insert(len(childrenlist), {"Name":context.Subitem[key].Name, "Description":context.Subitem[key].Description,
+                "Subitem":[], "ID":context.Subitem[key].ID, "Parent": context.Subitem[key].__parent__})
+
+        return childrenlist
+
+# @view_config(route_name = "root", request_method='POST')
+# def additemview(request):
+#     """
+#     The postview is called when an http POST request is sent from the client.
+#     The method find the item that called the POST and adds a child to that parent.
+#     """
+
+#     data = request.json_body
+#     print data.items()
+
+#     conn = get_connection(request)
+#     app_root = appmaker(conn.root())
+
+#     # If the Parent ID is 0 then it is a Project item
+#     # Follow the path and add a BudgetGroup item
+#     if data[Parent] == '0':
+#         bg = BudgetGroup("TestBG", "TestBG Description", data[ID])
+#         app_root['0'][data[ID]].addItem(bg.ID, bg)
+
+#     # If the Parent ID is not 0 then it is a BudgetGroup item
+#     # Follow the path and add a BudgetItem item
+#     else:
+#         bi = BudgetItem("TestBI", "TestBI Description", data[ID])
+#         app_root['0'][data[Parent]][data[ID]].addItem(bi.ID, bi)
+
+#     conn.root()['app_root'] = app_root
+#     import transaction
+#     transaction.commit()
+
+#     return HTTPFound(location='/success/')
+
+
+@view_config(route_name = "addItem", request_method='POST')
+def additemview(request):
+    """
+    The postview is called when an http POST request is sent from the client.
+    The method find the item that called the POST and adds a child to that parent.
+    """
+    print "we're in add view"
+    data = request.json_body
+    print data.items()
+    print (data[Parent] == '0')
+    conn = get_connection(request)
+    app_root = appmaker(conn.root())
+
+    # If the Parent ID is 0 then it is a Project item
+    # Follow the path and add a BudgetGroup item
+    if data[Parent] == '0':
+        bg = BudgetGroup("TestBG", "TestBG Description", data[ID])
+        app_root['0'][data[ID]].addItem(bg.ID, bg)
+
+    # If the Parent ID is not 0 then it is a BudgetGroup item
+    # Follow the path and add a BudgetItem item
+    else:
+        bi = BudgetItem("TestBI", "TestBI Description", data[ID])
+        app_root['0'][data[Parent]][data[ID]].addItem(bi.ID, bi)
+
+    conn.root()['app_root'] = app_root
+    import transaction
+    transaction.commit()
+
+    return HTTPFound(location='/success/')

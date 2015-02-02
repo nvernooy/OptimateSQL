@@ -1,9 +1,9 @@
-/* Adding hover effect*/
+/* Adding hover effect
    .ng-binding:hover:after {
     content: "+";
    }
 
-/* Tutorial drop down menu */
+/* Tutorial drop down menu
 div.menu-bar ul ul {
   display: none;
 }
@@ -11,6 +11,11 @@ div.menu-bar ul ul {
 div.menu-bar li:hover > ul {
   display: block;
 }
+ */
+
+/* Hovering*/
+span.additem {display: none}
+div[data-tree-model] li:hover span.additem {display: inline}
 
 /* Treeview mode */
 div[data-angular-treeview] {

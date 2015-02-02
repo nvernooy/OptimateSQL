@@ -26,69 +26,73 @@
     // Add the right click directive
     // optimateApp.directive(
     angular.module( 'angularTreeview', [] )
-    // .directive(
-    //     'ngRightClick', function($parse)
-    //         {
-    //         return function(scope, element, attrs) {
-    //             var fn = $parse(attrs.ngRightClick);
-    //             element.bind('contextmenu', function(event) {
-    //                 scope.$apply(function() {
-    //                     event.preventDefault();
-    //                     fn(scope, {$event:event});
-    //                 });
-    //             });
-    //         };
-    //     }
-    // )
-
-    // Add the treeview directive
-    // optimateApp.directive(
     .directive(
-        'treeModel', ['$compile', '$http', function( $compile, $http ) {
+        'treeModel', ['$compile', '$http', function( $compile, $http) {
             return {
                 restrict: 'A',
                 link: function ( scope, element, attrs ) {
+
+                    // function to POST data to server
+                    // Need to add check if it is a budgetitem
+                     scope.addItem = function(itemId, parentid) {
+                                console.log(parentid + ", " + itemId);
+                                // $http({method: 'POST', url: 'http://localhost:8080/additem', data: {ID: itemId, Parent:parentid}}).success(
+                                $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
+                                    function () {
+                                        alert('Success: Child added to ' + itemId);
+                                    }
+                            );
+                          }
+
                     //tree id
                     var treeId = attrs.treeId;
-
                     //tree model
                     var treeModel = attrs.treeModel;
-
                     //node id
                     var nodeId = attrs.nodeId || 'id';
-
                     //node label
                     var nodeLabel = attrs.nodeLabel || 'label';
-
                     //children
                     var nodeChildren = attrs.nodeChildren || 'children';
+                    // parent
+                    var nodeParent = attrs.nodeParent || 'parent'
 
                     //tree template
                     var template =
                         '<ul>' +
                             '<li data-ng-repeat="node in ' + treeModel + '">' +
-                                '<i class="collapsed" data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
-                                '<i class="expanded" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
-                                '<i class="normal" data-ng-hide="node.' + nodeChildren + '.length"></i> ' +
-                                '<span data-ng-class="node.selected" data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}</span>' +
-                                '<div data-ng-hide="node.collapsed" data-tree-id="' + treeId + '" data-tree-model="node.' + nodeChildren + '" data-node-id=' + nodeId + ' data-node-label=' + nodeLabel + ' data-node-children=' + nodeChildren + '></div>' +
+                                '<i class="collapsed" ' +
+                                    'data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' +
+                                    treeId + '.selectNodeHead(node)">'+
+                                '</i>' +
+                                '<i class="expanded" '+
+                                    'data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' +
+                                    treeId + '.selectNodeHead(node)">'+
+                                '</i>' +
+                                '<i class="normal" '+
+                                    'data-ng-hide="node.' + nodeChildren + '.length">'+
+                                '</i> ' +
+
+                                '<span data-ng-class="node.selected" '+
+                                    'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
+                                '</span>' +
+
+                                // Adding the "+" link hover item
+                                '<span class="additem">'+
+                                    '<a ng-click="addItem(node.'+nodeId+', node.'+nodeParent+')" href="">+</a>'+
+                                '</span>'+
+
+                                '<div data-ng-hide="node.collapsed" '+
+                                    'data-tree-id="' + treeId +
+                                    '" data-tree-model="node.' + nodeChildren +
+                                    '" data-node-id=' + nodeId +
+                                    ' data-node-label=' + nodeLabel +
+                                    ' data-node-children=' + nodeChildren + '>'+
+                                '</div>' +
+
                             '</li>' +
-                        '</ul>' +
-                        '<div class="menu-bar">'+
-                              '<ul>'+
-                               ' <li>'+
-                                  '<p>+</p>'+
-                                  '<ul>'+
-                                   ' <li>'+
-                                        '<p>Add<p>'+
-                                        '<p>Edit</p>'+
-                                        '<p>Delete</p>'+
-                                        '<p>Copy</p>'+
-                                    '</li>'+
-                                 ' </ul>'+
-                                '</li>'+
-                              '</ul>'+
-                            '</div>';
+
+                        '</ul>';
 
 
                     //check tree id, tree model
@@ -108,6 +112,8 @@
                             // scope[treeId].selectNodeLabel = scope[treeId].selectNodeLabelRightClicked || function( selectedNode ){
                             //     alert("Label right clicked");
                             // }
+
+
 
                             //if node label clicks,
                             scope[treeId].selectNodeLabel = scope[treeId].selectNodeLabel || function( selectedNode ){
@@ -135,7 +141,6 @@
 
                                 // get path from parentid in node
                                 // and go to that path with http
-                                console.log ("Sending http request");
                                 $http.get('http://127.0.0.1:8080/'+path).success
                                     (
                                     function(data)
@@ -149,9 +154,6 @@
                         }
                         //Rendering template.
                         element.html('').append( $compile( template )( scope ) );
-
-                        console.log("rendering complete");
-                        console.log(scope[treeId]);
                     }
                 }
             };

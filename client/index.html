@@ -14,65 +14,6 @@
 </head>
 <body>
 
-
-    <!--
-    <div ng-app="costItems">
-    <div ng-controller="ItemListCtrl">
-  <div class="container-fluid">
-    <div class="row">
-
-      <div class="col-md-10">
-
-
-        <ul class="projects">
-
-          <li ng-repeat="project in projects">
-            <span>{{project.Name}}</span>
-            <p>{{project.Description}}</p>
-            <p>{{project.ID}}</p>
-
-            <ul>
-
-                <li ng-repeat="budgetgroup in project.BudgetGroups">
-                    <span>{{budgetgroup.Name}}</span>
-                    <p>{{budgetgroup.Description}}</p>
-                    <p>{{budgetgroup.ID}}</p>
-                    <ul>
-
-	               <li ng-repeat="budgetitem in budgetgroup.BudgetItems">
-                            <span>{{budgetitem.Name}}</span>
-                            <p>{{budgetitem.Description}}</p>
-                            <p>{{budgetitem.ID}}</p>
-                            <p>{{budgetitem.Quantity}}</p>
-                            <p>{{budgetitem.Rate}}</p>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-          </li>
-        </ul>
-        </div>
-        </div>
-      </div>
-    </div>
-  </div>-->
-
-    <!--
-    <div ng-app="projectdataApp">
-        <div ng-controller="projectdataControl">
-            <div
-              data-angular-treeview="true"
-              data-tree-id="mytree"
-              data-tree-model="roleList"
-              data-node-id="ID"
-              data-node-label="Name"
-              data-node-description="Description"
-              data-node-children="Subitem" >
-            </div>
-        </div>
-    </div>-->
-
-
   <div ng-app="myApp">
           <div ng-controller="myController">
 
@@ -81,25 +22,15 @@
               data-tree-id="mytree"
               data-tree-model="roleList"
               data-node-id="ID"
+              data-node-parent="Parent"
               data-node-label="Name"
               data-node-description="Description"
               data-node-children="Subitem" >
             </div>
 
             <div style="margin:10px 0 30px 0; padding:10px; background-color:#EEEEEE; border-radius:5px; font:12px Tahoma;">
-              <span><b>Selected Node Description:</b>{{mytree.currentNode.Description}}</span>
+              <span><b>Selected Node ID:</b>{{mytree.currentNode.ID}}</span>
             </div>
-
-            <!--
-              [TREE attribute]
-              angular-treeview: the treeview directive
-              tree-id : each tree's unique id.
-              tree-model : the tree model on $scope.
-              node-id : each node's id
-              node-label : each node's label
-              node-children: each node's children
-            -->
-
 
           </div>
         </div>
