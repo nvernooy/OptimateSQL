@@ -44,7 +44,7 @@ def main(global_config, **settings):
     config.add_subscriber(handleResponse, NewRequest)
     config.add_static_view('static', 'static', cache_max_age=3600)
 
-    config.add_route('addItem', '/additem')
+    # config.add_route('additem', '/additem')
     # config.add_route('root', '/')
     config.scan('.views')
     return config.make_wsgi_app()

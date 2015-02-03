@@ -31,19 +31,6 @@
             return {
                 restrict: 'A',
                 link: function ( scope, element, attrs ) {
-
-                    // function to POST data to server
-                    // Need to add check if it is a budgetitem
-                     scope.addItem = function(itemId, parentid) {
-                                console.log(parentid + ", " + itemId);
-                                // $http({method: 'POST', url: 'http://localhost:8080/additem', data: {ID: itemId, Parent:parentid}}).success(
-                                $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
-                                    function () {
-                                        alert('Success: Child added to ' + itemId);
-                                    }
-                            );
-                          }
-
                     //tree id
                     var treeId = attrs.treeId;
                     //tree model
@@ -54,8 +41,20 @@
                     var nodeLabel = attrs.nodeLabel || 'label';
                     //children
                     var nodeChildren = attrs.nodeChildren || 'children';
-                    // parent
-                    var nodeParent = attrs.nodeParent || 'parent'
+                    // path
+                    var nodePath = attrs.nodePath || 'path'
+
+                    // function to POST data to server
+                    // Need to add check if it is a budgetitem
+                     scope.addItem = function(path) {
+                                console.log(path);
+                                $http({method: 'POST', url: 'http://localhost:8080/add'+path}).success(
+                                // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
+                                    function () {
+                                        alert('Success: Child added');
+                                    }
+                            );
+                    }
 
                     //tree template
                     var template =
@@ -73,14 +72,20 @@
                                     'data-ng-hide="node.' + nodeChildren + '.length">'+
                                 '</i> ' +
 
-                                '<span data-ng-class="node.selected" '+
+                                '<div class = "selectedNode" data-ng-class="node.selected" '+
                                     'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
-                                '</span>' +
+                                    '<span class = "addItem">'+
+                                        '<a ng-click="addItem(node.'+nodePath+')" href="">+</a>'+
+                                    '</span>'
+                                '</div>' +
 
-                                // Adding the "+" link hover item
-                                '<span class="additem">'+
-                                    '<a ng-click="addItem(node.'+nodeId+', node.'+nodeParent+')" href="">+</a>'+
-                                '</span>'+
+                                // '<span data-ng-class="node.selected" '+
+                                //     'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
+                                // '</span>' +
+                                // // Adding the "+" link hover item
+                                // '<span class="additem">'+
+                                //     '<a data-ng-click="addItem(node.'+nodePath+')" href="">+</a>'+
+                                // '</span>'+
 
                                 '<div data-ng-hide="node.collapsed" '+
                                     'data-tree-id="' + treeId +
@@ -130,18 +135,19 @@
                                 scope[treeId].currentNode = selectedNode;
 
                                 // get the url path from the node and it's parent
-                                var path = "";
-                                // Get path
-                                if (scope[treeId].currentNode.Parent == "0"){
-                                    path = scope[treeId].currentNode.ID;
-                                }
-                                else{
-                                    path =  scope[treeId].currentNode.Parent + "/" + scope[treeId].currentNode.ID;
-                                }
+                                // var path = "";
+                                // // Get path
+                                // if (scope[treeId].currentNode.Parent == "0"){
+                                //     path = scope[treeId].currentNode.ID;
+                                // }
+                                // else{
+                                //     path =  scope[treeId].currentNode.Parent + "/" + scope[treeId].currentNode.ID;
+                                // }
 
-                                // get path from parentid in node
+                                // get path from the node
                                 // and go to that path with http
-                                $http.get('http://127.0.0.1:8080/'+path).success
+                                var path = scope[treeId].currentNode.Path;
+                                $http.get('http://127.0.0.1:8080'+path).success
                                     (
                                     function(data)
                                         {

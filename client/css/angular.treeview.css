@@ -14,8 +14,12 @@ div.menu-bar li:hover > ul {
  */
 
 /* Hovering*/
-span.additem {display: none}
-div[data-tree-model] li:hover span.additem {display: inline}
+/*span.additem {display: none}
+div[data-tree-model] li:hover span.additem {display: inline}*/
+
+/* Add hovering to div*/
+div.selectednode:hover span.additem {display: inline}
+div.selectednode {display: inline}
 
 /* Treeview mode */
 div[data-angular-treeview] {
