@@ -1,7 +1,8 @@
-/* Adding hover effect
-   .ng-binding:hover:after {
-    content: "+";
-   }
+/* Adding hover effect*/
+/*  selectedNode.ng-binding {display: none;}
+   selectedNode.ng-binding:hover {
+    display: inline;
+   }*/
 
 /* Tutorial drop down menu
 div.menu-bar ul ul {
@@ -18,8 +19,8 @@ div.menu-bar li:hover > ul {
 div[data-tree-model] li:hover span.additem {display: inline}*/
 
 /* Add hovering to div*/
-div.selectednode:hover span.additem {display: inline}
-div.selectednode {display: inline}
+/*div.selectednode:hover span.additem {display: inline}
+div.selectednode {display: inline}*/
 
 /* Treeview mode */
 div[data-angular-treeview] {

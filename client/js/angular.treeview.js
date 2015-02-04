@@ -48,7 +48,7 @@
                     // Need to add check if it is a budgetitem
                      scope.addItem = function(path) {
                                 console.log(path);
-                                $http({method: 'POST', url: 'http://localhost:8080/add'+path}).success(
+                                $http({method: 'POST', url: 'http://localhost:8080' + path + 'add'}).success(
                                 // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
                                     function () {
                                         alert('Success: Child added');
@@ -72,20 +72,20 @@
                                     'data-ng-hide="node.' + nodeChildren + '.length">'+
                                 '</i> ' +
 
-                                '<div class = "selectedNode" data-ng-class="node.selected" '+
-                                    'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
-                                    '<span class = "addItem">'+
-                                        '<a ng-click="addItem(node.'+nodePath+')" href="">+</a>'+
-                                    '</span>'
-                                '</div>' +
-
-                                // '<span data-ng-class="node.selected" '+
+                                // '<span class = "selectedNode" data-ng-class="node.selected" '+
                                 //     'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
-                                // '</span>' +
-                                // // Adding the "+" link hover item
-                                // '<span class="additem">'+
-                                //     '<a data-ng-click="addItem(node.'+nodePath+')" href="">+</a>'+
-                                // '</span>'+
+                                //     '<span class = "addItem">'+
+                                //         '<a ng-click="addItem(node.'+nodePath+')" href="">+</a>'+
+                                //     '</span>'
+                                // '<span>' +
+
+                                '<span data-ng-class="node.selected" '+
+                                    'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
+                                '</span>' +
+                                // Adding the "+" link hover item
+                                '<span class="additem">'+
+                                    '<a data-ng-click="addItem(node.Path)" href="">+</a>'+
+                                '</span>'+
 
                                 '<div data-ng-hide="node.collapsed" '+
                                     'data-tree-id="' + treeId +
@@ -93,6 +93,7 @@
                                     '" data-node-id=' + nodeId +
                                     ' data-node-label=' + nodeLabel +
                                     ' data-node-children=' + nodeChildren + '>'+
+                                    ' data-node-path=' + nodePath + '>'+
                                 '</div>' +
 
                             '</li>' +
