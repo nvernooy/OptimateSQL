@@ -37,6 +37,10 @@ class RootModel(Persistent):
         else:
             raise KeyError
 
+    def delete (self, key):
+        print "deleting " + key
+        del self.Subitem[key]
+
     def __str__(self):
         """
         The toString method returns a string of the name and
@@ -88,6 +92,9 @@ class Project(Persistent):
             return child
         else:
             raise KeyError
+
+    def delete (self, key):
+        del self.Subitem[key]
 
     def __str__(self):
         """
@@ -142,6 +149,9 @@ class BudgetGroup(Persistent):
         else:
             raise KeyError
 
+    def delete (self, key):
+        del self.Subitem[key]
+
     def __str__(self):
         """
         The toString method returns a string of the name and
@@ -185,6 +195,17 @@ class BudgetItem(Persistent):
         self.Path = path+self.ID+"/"
         for key in self.Subitem.keys():
             self.Subitem[key].addPath(self.Path)
+
+    def __getitem__ (self, key):
+        child = self.Subitem[key]
+
+        if child != None:
+            return child
+        else:
+            raise KeyError
+
+    def delete (self, key):
+        del self.Subitem[key]
 
     def __str__(self):
         """

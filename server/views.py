@@ -11,6 +11,7 @@ from models import RootModel, Project, BudgetGroup, BudgetItem
 from models import appmaker
 from pyramid_zodbconn import get_connection
 from persistent import Persistent
+import transaction
 
 
 @view_config(context=RootModel, renderer='json')
@@ -47,7 +48,6 @@ def additemview(context, request):
     print "we're in add context view"
 
     if request.method == 'OPTIONS':
-        print "options method"
         return {"success" : True}
     else:
         print "adding to item"
@@ -61,58 +61,67 @@ def additemview(context, request):
         print "returning success"
         return {"success" : True}
 
-# @view_config(name = "add", renderer = 'json')
-# def additemview(request):
-#     """
-#     The postview is called when an http POST request is sent from the client.
-#     The method find the item that called the POST and adds a child to that parent.
-#     """
-#     print "we're in add view"
 
-#     if request.method == 'OPTIONS':
-#         print "options method"
-#         return {"success" : True}
-#     else:
-#         path = request.subpath[0]
+@view_config(name = "delete",context=RootModel, renderer='json')
+@view_config(name = "delete",context=Project, renderer='json')
+@view_config(name = "delete",context=BudgetGroup, renderer='json')
+@view_config(name = "delete",context=BudgetItem, renderer='json')
+def deleteitemview(context, request):
+    """
+    The postview is called when an http POST request is sent from the client.
+    The method find the item that called the POST and adds a child to that parent.
+    """
+    print "we're in delete context view"
 
-#         idlist = path.split("/")
+    if request.method == 'OPTIONS':
+        return {"success" : True}
+    else:
+        data = request.json_body
+        print "setting item to none"
 
-#         conn = get_connection(request)
-#         app_root = appmaker(conn.root())
+        print context
 
-#         itemrequested = app_root[idlist.pop(0)]
-#         for key in idlist:
-#             itemrequested = itemrequested[key]
+        print "context deletion"
+        print context.ID
+        try:
+            context.delete([data['ID']])
+        except Exception, e:
+            print e
 
-#         print "adding to item"
-#         bg = BudgetGroup("TestBG", "TestBG Description", idlist[0])
-#         itemrequested.addItem(bg.ID, bg)
+        print "new context"
+        print context
+        # context = None
+        print "commiting"
+        transaction.commit()
 
-#         # data = request.json_body
+        print "returning success"
+        return {"success" : True}
 
-#         # print data.items()
-#         # print (data['Parent'] == '0')
-#         # conn = get_connection(request)
-#         # app_root = appmaker(conn.root())
+@view_config(name = "paste",context=RootModel, renderer='json')
+@view_config(name = "paste",context=Project, renderer='json')
+@view_config(name = "paste",context=BudgetGroup, renderer='json')
+@view_config(name = "paste",context=BudgetItem, renderer='json')
+def additemview(context, request):
+    """
+    The postview is called when an http POST request is sent from the client.
+    The method find the item that called the POST and adds a child to that parent.
+    """
+    print "we're in paste context view"
 
-#         # # If the Parent ID is 0 then it is a Project item
-#         # # Follow the path and add a BudgetGroup item
-#         # if data['Parent'] == '0':
-#         #     print "adding to project"
-#         #     bg = BudgetGroup("TestBG", "TestBG Description", data['ID'])
-#         #     app_root[data['ID']].addItem(bg.ID, bg)
+    if request.method == 'OPTIONS':
+        return {"success" : True}
+    else:
+        print "pasting to item"
 
-#         # # If the Parent ID is not 0 then it is a BudgetGroup item
-#         # # Follow the path and add a BudgetItem item
-#         # else:
-#         #     print  "adding to budgetgroup"
-#         #     bi = BudgetItem("TestBI", "TestBI Description", data['ID'])
-#         #     app_root[data['Parent']][data['ID']].addItem(bi.ID, bi)
+        data = request.json_body
 
-#         # print "commiting transaction"
-#         conn.root()['app_root'] = app_root
-#         import transaction
-#         transaction.commit()
+        print data.items()
+        # bg = BudgetGroup("TestBG", "TestBG Description", context.ID)
+        # context.addItem(bg.ID, bg)
 
-#         print "returning success"
-#         return {"success" : True}
+        # print "commiting"
+        # import transaction
+        # transaction.commit()
+
+        print "returning success"
+        return {"success" : True}

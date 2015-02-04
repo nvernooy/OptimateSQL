@@ -44,8 +44,8 @@
                     // path
                     var nodePath = attrs.nodePath || 'path'
 
-                    // function to POST data to server
-                    // Need to add check if it is a budgetitem
+                    scope.copiednode;
+                    // function to POST data to server to add item
                      scope.addItem = function(path) {
                                 console.log(path);
                                 $http({method: 'POST', url: 'http://localhost:8080' + path + 'add'}).success(
@@ -55,6 +55,42 @@
                                     }
                             );
                     }
+
+                    // Function to delete data to server
+                     scope.deleteItem = function(path, id) {
+                                console.log(path);
+                                // get parent path
+                                var temp = path.substring (0, path.length-1);
+                                console.log (temp)
+                                var parentpath = temp.substring(0, temp.lastIndexOf("/"));
+                                console.log (parentpath);
+                                $http({method: 'POST', url: 'http://localhost:8080' + parentpath + '/delete', data:{'ID': id}}).success(
+                                // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
+                                    function () {
+                                        alert('Success: Item deleted');
+                                    }
+                            );
+                    }
+
+                    // Function to copy a node
+                     scope.copy = function(cnode) {
+                                scope.copiednode = cnode
+                                console.log(scope.copiednode);
+                                // tempNode = cnode;
+                                //  console.log(tempNode);
+                    }
+
+                    // function to POST data to server to paste item
+                     scope.paste = function(path) {
+                                console.log("Node to be pasted: " + scope.copiednode);
+                                $http({method: 'POST', url: 'http://localhost:8080' + path + 'paste', data:{'Node': scope.copiednode}}).success(
+                                // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
+                                    function () {
+                                        alert('Success: Node pasted');
+                                    }
+                            );
+                    }
+
 
                     //tree template
                     var template =
@@ -82,9 +118,25 @@
                                 '<span data-ng-class="node.selected" '+
                                     'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
                                 '</span>' +
-                                // Adding the "+" link hover item
+
+                                // Adding the "+" link add item
                                 '<span class="additem">'+
                                     '<a data-ng-click="addItem(node.Path)" href="">+</a>'+
+                                '</span>'+
+
+                                //Adding the "-" link delete item
+                                '<span class="deleteitem">'+
+                                    '<a data-ng-click="deleteItem(node.Path, node.ID)" href="">-</a>'+
+                                '</span>'+
+
+                                //Adding the "Copy" link to Copy item
+                                '<span class="copyitem">'+
+                                    '<a data-ng-click="copy(node)" href="">Copy</a>'+
+                                '</span>'+
+
+                                //Adding the "Paste" link to Paste item
+                                '<span class="pasteitem">'+
+                                    '<a data-ng-click="paste(node.Path)" href="">Paste</a>'+
                                 '</span>'+
 
                                 '<div data-ng-hide="node.collapsed" '+
