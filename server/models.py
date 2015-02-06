@@ -4,8 +4,49 @@ from BTrees.OOBTree import OOBTree
 import uuid
 import os.path
 
+class OptimateObject (Persistent):
+    """
+    The base class of the Optimate project classes
+    """
 
-class RootModel(Persistent):
+    def __init__(self, name, desc, parentid):
+        self.__parent__ = parentid
+        self.Name = name
+        self.Description = desc
+        self.ID = uuid.uuid1().hex
+        self.Subitem = OOBTree()
+        self.Path = ""
+
+    def addSet(self, children):
+        self.Subitem = children
+
+    def addItem (self, key, item):
+        item.addPath (self.Path)
+        self.Subitem.insert (key, item)
+
+    def items(self):
+        return self.Subitem
+
+    def delete (self, key):
+        del self.Subitem[key]
+
+    def addPath (self, path):
+        self.Path = path+self.ID+"/"
+        for key in self.Subitem.keys():
+            self.Subitem[key].addPath(self.Path)
+
+    def resetID(self):
+        self.ID = uuid.uuid1().hex
+
+    def __getitem__ (self, key):
+        child = self.Subitem[key]
+
+        if child != None:
+            return child
+        else:
+            raise KeyError
+
+class RootModel(OptimateObject):
     """
     A Persistent class that acts as the root object in the ZODB
     It has an OOBTree of the children of this object
@@ -19,27 +60,9 @@ class RootModel(Persistent):
         self.Subitem = OOBTree()
         self.ID = "0"
 
-    def addSet (self, children):
-        self.Subitem = children
-
     def addItem (self, key, item):
         item.addPath ("/")
         self.Subitem.insert (key, item)
-
-    def items(self):
-        return self.Subitem
-
-    def __getitem__ (self, key):
-        child = self.Subitem[key]
-
-        if child != None:
-            return child
-        else:
-            raise KeyError
-
-    def delete (self, key):
-        print "deleting " + key
-        del self.Subitem[key]
 
     def __str__(self):
         """
@@ -56,7 +79,7 @@ class RootModel(Persistent):
 
         return output
 
-class Project(Persistent):
+class Project(OptimateObject):
     """
     A Persistent class that has the root as its parent
     It has an OOBTree of the children of this object
@@ -73,28 +96,6 @@ class Project(Persistent):
         self.__parent__ = parentid
         self.Path = ""
 
-    def addSet (self, children):
-        self.Subitem = children
-
-    def addItem (self, key, item):
-        item.addPath(self.Path)
-        self.Subitem.insert (key, item)
-
-    def addPath (self, path):
-        self.Path = path+self.ID+"/"
-        for key in self.Subitem.keys():
-            self.Subitem[key].addPath(self.Path)
-
-    def __getitem__ (self, key):
-        child = self.Subitem[key]
-
-        if child != None:
-            return child
-        else:
-            raise KeyError
-
-    def delete (self, key):
-        del self.Subitem[key]
 
     def __str__(self):
         """
@@ -112,7 +113,7 @@ class Project(Persistent):
         return output
 
 
-class BudgetGroup(Persistent):
+class BudgetGroup(OptimateObject):
     """
     A Persistent class that has a Project as its parent
     It has an OOBTree of the children of this object
@@ -128,29 +129,6 @@ class BudgetGroup(Persistent):
         self.__name__ = self.ID
         self.__parent__ = parentid
         self.Path = ""
-
-    def addSet (self, children):
-        self.Subitem = children
-
-    def addItem (self, key, item):
-        item.addPath(self.Path)
-        self.Subitem.insert (key, item)
-
-    def addPath (self, path):
-        self.Path = path+self.ID+"/"
-        for key in self.Subitem.keys():
-            self.Subitem[key].addPath(self.Path)
-
-    def __getitem__ (self, key):
-        child = self.Subitem[key]
-
-        if child != None:
-            return child
-        else:
-            raise KeyError
-
-    def delete (self, key):
-        del self.Subitem[key]
 
     def __str__(self):
         """
@@ -168,7 +146,7 @@ class BudgetGroup(Persistent):
         return output
 
 
-class BudgetItem(Persistent):
+class BudgetItem(OptimateObject):
     """
     A Persistent class that has a BudgetGroup as its parent
     Its the leaf object and has no children
@@ -186,26 +164,6 @@ class BudgetItem(Persistent):
         self.__name__ = self.ID
         self.__parent__ = parentid
         self.Path = ""
-
-    def addItem (self, key, item):
-        item.addPath(self.Path)
-        self.Subitem.insert (key, item)
-
-    def addPath (self, path):
-        self.Path = path+self.ID+"/"
-        for key in self.Subitem.keys():
-            self.Subitem[key].addPath(self.Path)
-
-    def __getitem__ (self, key):
-        child = self.Subitem[key]
-
-        if child != None:
-            return child
-        else:
-            raise KeyError
-
-    def delete (self, key):
-        del self.Subitem[key]
 
     def __str__(self):
         """

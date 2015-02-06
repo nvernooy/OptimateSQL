@@ -7,11 +7,12 @@ of the cost estimate items
 
 from pyramid.view import view_config
 from pyramid.response import Response
-from models import RootModel, Project, BudgetGroup, BudgetItem
+from models import OptimateObject, RootModel, Project, BudgetGroup, BudgetItem
 from models import appmaker
 from pyramid_zodbconn import get_connection
 from persistent import Persistent
 import transaction
+import pdb
 
 
 @view_config(context=RootModel, renderer='json')
@@ -84,7 +85,7 @@ def deleteitemview(context, request):
         print "context deletion"
         print context.ID
         try:
-            context.delete([data['ID']])
+            context.delete(data['ID'])
         except Exception, e:
             print e
 
@@ -101,27 +102,44 @@ def deleteitemview(context, request):
 @view_config(name = "paste",context=Project, renderer='json')
 @view_config(name = "paste",context=BudgetGroup, renderer='json')
 @view_config(name = "paste",context=BudgetItem, renderer='json')
-def additemview(context, request):
+def pasteitemview(context, request):
     """
     The postview is called when an http POST request is sent from the client.
     The method find the item that called the POST and adds a child to that parent.
     """
-    print "we're in paste context view"
+    print "we're in past context view"
 
     if request.method == 'OPTIONS':
         return {"success" : True}
     else:
         print "pasting to item"
 
-        data = request.json_body
+        conn = get_connection(request)
+        app_root = appmaker(conn.root())
 
-        print data.items()
+        data = request.json_body
+        path = data["Path"]
+
+        try:
+            path = path[1:-1]
+
+            pathlist = path.split ("/")
+
+            target = app_root
+
+            for pid in pathlist:
+                target = target[pid]
+            print target
+            context.addItem (target.ID, target)
+        except Exception, e:
+            print e
+            raise e
         # bg = BudgetGroup("TestBG", "TestBG Description", context.ID)
         # context.addItem(bg.ID, bg)
 
-        # print "commiting"
-        # import transaction
-        # transaction.commit()
+        print "commiting"
+        import transaction
+        transaction.commit()
 
         print "returning success"
         return {"success" : True}
