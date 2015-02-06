@@ -29,9 +29,16 @@
             </div>
 
             <div style="margin:10px 0 30px 0; padding:10px; background-color:#EEEEEE; border-radius:5px; font:12px Tahoma;">
-              <span><b>Selected Node ID:</b>{{mytree.currentNode.Path}}</span>
+                <span><b>Selected Node ID:</b>{{mytree.currentNode.Path}}</span>
             </div>
 
+            <button ng-click='toggleModal()'>Open Modal Dialog</button>
+            <modal-dialog show='modalShown' width='750px' height='60%'>
+                  <a data-ng-click='treeId.addItem(node.Path)' href="">Add</a>
+                  <!-- <a data-ng-click=treeId.deleteItem(node.Path, node.ID) href="">Delete</a>
+                  <a data-ng-click=treeId.copy(node.Path) href="">Copy</a>
+                  <a data-ng-click=treeId.paste(node.Path) href="">Paste</a> -->
+            </modal-dialog>
           </div>
         </div>
 
