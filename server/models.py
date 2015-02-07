@@ -14,6 +14,7 @@ class OptimateObject (Persistent):
         self.Name = name
         self.Description = desc
         self.ID = uuid.uuid1().hex
+        self.__name__ = self.ID
         self.Subitem = OOBTree()
         self.Path = ""
 
@@ -25,7 +26,7 @@ class OptimateObject (Persistent):
         self.Subitem.insert (key, item)
 
     def items(self):
-        return self.Subitem
+        return self.Subitem.items()
 
     def delete (self, key):
         del self.Subitem[key]
@@ -46,6 +47,21 @@ class OptimateObject (Persistent):
         else:
             raise KeyError
 
+    def __str__(self):
+        """
+        The toString method returns a string of the name and
+        description of the class.
+        If the set is not empty thereafter it prints
+        all the items in the set.
+        """
+
+        output = self.Name + ": " + self.Description + ", " + self.ID+ ", " + self.Path
+        if self.Subitem is not None:
+            for key in self.Subitem.keys():
+                output += ("\n\t" + str(self.Subitem[key]))
+
+        return output
+
 class RootModel(OptimateObject):
     """
     A Persistent class that acts as the root object in the ZODB
@@ -59,10 +75,7 @@ class RootModel(OptimateObject):
     def __init__(self):
         self.Subitem = OOBTree()
         self.ID = "0"
-
-    def addItem (self, key, item):
-        item.addPath ("/")
-        self.Subitem.insert (key, item)
+        self.Path = "/"
 
     def __str__(self):
         """
@@ -97,22 +110,6 @@ class Project(OptimateObject):
         self.Path = ""
 
 
-    def __str__(self):
-        """
-        The toString method returns a string of the name and
-        description of the class.
-        If the set is not empty thereafter it prints
-        all the items in the set.
-        """
-
-        output = self.Name + ": " + self.Description + ", " + self.ID+ ", " + self.Path
-        if self.Subitem is not None:
-            for key in self.Subitem.keys():
-                output += ("\n\t" + str(self.Subitem[key]))
-
-        return output
-
-
 class BudgetGroup(OptimateObject):
     """
     A Persistent class that has a Project as its parent
@@ -129,21 +126,6 @@ class BudgetGroup(OptimateObject):
         self.__name__ = self.ID
         self.__parent__ = parentid
         self.Path = ""
-
-    def __str__(self):
-        """
-        The toString method returns a string of the name and
-        description of the class.
-        If the set is not empty thereafter it prints
-        all the items in the set.
-        """
-
-        output = self.Name + ": " + self.Description + ", " + self.ID+ ", " + self.Path
-        if self.Subitem is not None:
-            for key in self.Subitem.keys():
-                output += ("\n\t\t" + str(self.Subitem[key]))
-
-        return output
 
 
 class BudgetItem(OptimateObject):
@@ -164,14 +146,6 @@ class BudgetItem(OptimateObject):
         self.__name__ = self.ID
         self.__parent__ = parentid
         self.Path = ""
-
-    def __str__(self):
-        """
-        The toString method returns just returns the name of this
-        budgetitem
-        """
-
-        return self.Name + ": " + self.Description + ", " + self.ID + ", " + self.Path
 
 
 def appmaker(zodb_root):

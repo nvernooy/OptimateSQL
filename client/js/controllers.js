@@ -41,7 +41,9 @@ costItems.controller
                         );
                     $scope.modalShown = false;
                     $scope.toggleModal = function() {
+                      console.log("shown: " + $scope.modalShown);
                     $scope.modalShown = !$scope.modalShown;
+                     console.log("shown after: " + $scope.modalShown);
                   };
               }]
     );

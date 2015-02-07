@@ -73,25 +73,35 @@
                                     'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
                                 '</span>' +
 
-                                // Adding the "+" link add item
-                                '<span class="additem">'+
-                                    '<a data-ng-click="' + treeId + '.addItem(node.Path)" href="">+</a>'+
+                                '<span class="additem" ng-show="node.selected">'+
+                                    '<button ng-click="toggleModal()">+</button>'+
+                                                        '<modal-dialog show="modalShown" width="300px" height="50%">'+
+                                                            '<button data-ng-click="' + treeId + '.addItem(node.Path)">Add</button>'+
+                                                            '<button data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)">Delete</button>'+
+                                                            '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
+                                                            '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
+                                                        '</modal-dialog>'+
                                 '</span>'+
+
+                                // Adding the "+" link add item
+                                // '<span class="additem" ng-show="node.selected">'+
+                                //     '<a data-ng-click="' + treeId + '.addItem(node.Path)" href="">+</a>'+
+                                // '</span>'+
 
                                 //Adding the "-" link delete item
-                                '<span class="deleteitem">'+
-                                    '<a data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)" href="">-</a>'+
-                                '</span>'+
+                                // '<span class="deleteitem">'+
+                                //     '<a data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)" href="">-</a>'+
+                                // '</span>'+
 
-                                //Adding the "Copy" link to Copy item
-                                '<span class="copyitem">'+
-                                    '<a data-ng-click="' + treeId + '.copy(node.Path)" href="">Copy</a>'+
-                                '</span>'+
+                                // //Adding the "Copy" link to Copy item
+                                // '<span class="copyitem">'+
+                                //     '<a data-ng-click="' + treeId + '.copy(node.Path)" href="">Copy</a>'+
+                                // '</span>'+
 
-                                //Adding the "Paste" link to Paste item
-                                '<span class="pasteitem">'+
-                                    '<a data-ng-click="' + treeId + '.paste(node.Path)" href="">Paste</a>'+
-                                '</span>'+
+                                // //Adding the "Paste" link to Paste item
+                                // '<span class="pasteitem">'+
+                                //     '<a data-ng-click="' + treeId + '.paste(node.Path)" href="">Paste</a>'+
+                                // '</span>'+
 
                                 '<div data-ng-hide="node.collapsed" '+
                                     'data-tree-id="' + treeId +
@@ -105,15 +115,6 @@
                             '</li>' +
 
                         '</ul>';
-
-                        // the dialogue template
-                        // var modaltemplate = '<button ng-click="toggleModal()">Open Modal Dialog</button>'+
-                        //                                 '<modal-dialog show="modalShown" width="750px" height="60%">'+
-                        //                                     '<a data-ng-click="' + treeId + '.addItem(node.Path)" href="">Add</a>'+
-                        //                             '<!--  <a data-ng-click=treeId.deleteItem(node.Path, node.ID) href="">Delete</a>'+
-                        //                                     '<a data-ng-click=treeId.copy(node.Path) href="">Copy</a>'+
-                        //                                     '<a data-ng-click=treeId.paste(node.Path) href="">Paste</a>    -->'+
-                        //                                 '</modal-dialog>';
 
 
                     //check tree id, tree model
@@ -191,20 +192,9 @@
 
                                 //set highlight to selected node
                                 selectedNode.selected = 'selected';
-                                console.log("Node clicked");
 
                                 //set currentNode
                                 scope[treeId].currentNode = selectedNode;
-
-                                // get the url path from the node and it's parent
-                                // var path = "";
-                                // // Get path
-                                // if (scope[treeId].currentNode.Parent == "0"){
-                                //     path = scope[treeId].currentNode.ID;
-                                // }
-                                // else{
-                                //     path =  scope[treeId].currentNode.Parent + "/" + scope[treeId].currentNode.ID;
-                                // }
 
                                 // get path from the node
                                 // and go to that path with http

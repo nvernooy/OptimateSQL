@@ -13,8 +13,9 @@ from pyramid_zodbconn import get_connection
 from persistent import Persistent
 import transaction
 import pdb
+from BTrees.OOBTree import OOBTree
 
-
+@view_config(context=OptimateObject, renderer='json')
 @view_config(context=RootModel, renderer='json')
 @view_config(context=Project, renderer='json')
 @view_config(context=BudgetGroup, renderer='json')
@@ -37,6 +38,7 @@ def childview(context, request):
 
     return childrenlist
 
+@view_config(name="add", context=OptimateObject, renderer='json')
 @view_config(name = "add",context=RootModel, renderer='json')
 @view_config(name = "add",context=Project, renderer='json')
 @view_config(name = "add",context=BudgetGroup, renderer='json')
@@ -52,17 +54,19 @@ def additemview(context, request):
         return {"success" : True}
     else:
         print "adding to item"
-        bg = BudgetGroup("TestBG", "TestBG Description", context.ID)
-        context.addItem(bg.ID, bg)
+        newnode = OptimateObject("TestObject", "Test Object Description", context.ID)
+        context.addItem(newnode.ID, newnode)
+
+        # bg = BudgetGroup("TestBG", "TestBG Description", context.ID)
+        # context.addItem(bg.ID, bg)
 
         print "commiting"
-        import transaction
         transaction.commit()
 
         print "returning success"
         return {"success" : True}
 
-
+@view_config(name = "delete", context=OptimateObject, renderer='json')
 @view_config(name = "delete",context=RootModel, renderer='json')
 @view_config(name = "delete",context=Project, renderer='json')
 @view_config(name = "delete",context=BudgetGroup, renderer='json')
@@ -78,16 +82,11 @@ def deleteitemview(context, request):
         return {"success" : True}
     else:
         data = request.json_body
-        print "setting item to none"
 
         print context
 
         print "context deletion"
-        print context.ID
-        try:
-            context.delete(data['ID'])
-        except Exception, e:
-            print e
+        context.delete(data['ID'])
 
         print "new context"
         print context
@@ -98,6 +97,7 @@ def deleteitemview(context, request):
         print "returning success"
         return {"success" : True}
 
+@view_config(name = "paste",context=OptimateObject, renderer='json')
 @view_config(name = "paste",context=RootModel, renderer='json')
 @view_config(name = "paste",context=Project, renderer='json')
 @view_config(name = "paste",context=BudgetGroup, renderer='json')
@@ -107,7 +107,7 @@ def pasteitemview(context, request):
     The postview is called when an http POST request is sent from the client.
     The method find the item that called the POST and adds a child to that parent.
     """
-    print "we're in past context view"
+    print "we're in paste context view"
 
     if request.method == 'OPTIONS':
         return {"success" : True}
@@ -117,29 +117,40 @@ def pasteitemview(context, request):
         conn = get_connection(request)
         app_root = appmaker(conn.root())
 
-        data = request.json_body
-        path = data["Path"]
+        print "getting path"
+        path = request.json_body["Path"]
+        path = path[1:-1]
+        pathlist = path.split ("/")
 
+        copy = app_root
+
+        print "getting node to be copied"
+        for pid in pathlist:
+            copy = copy[pid]
+
+        print "rebuilding"
+        # need to rebuild target with new id and path
         try:
-            path = path[1:-1]
+            paste = rebuild (copy, context.ID)
+            print paste
+            context.addItem (paste.ID, paste)
 
-            pathlist = path.split ("/")
-
-            target = app_root
-
-            for pid in pathlist:
-                target = target[pid]
-            print target
-            context.addItem (target.ID, target)
+            print "commiting"
+            transaction.commit()
         except Exception, e:
             print e
             raise e
-        # bg = BudgetGroup("TestBG", "TestBG Description", context.ID)
-        # context.addItem(bg.ID, bg)
-
-        print "commiting"
-        import transaction
-        transaction.commit()
 
         print "returning success"
         return {"success" : True}
+
+def rebuild(copy, parentid):
+    """ Recursively rebuilds the object and its children."""
+    copiedobject = OptimateObject(copy.Name, copy.Description, parentid)
+    if copy.Subitem != []:
+        for key, value in copy.items():
+            copiedchildren = rebuild(value, copiedobject.ID)
+            copiedobject.addItem(copiedchildren.ID, copiedchildren)
+
+    return copiedobject
+
