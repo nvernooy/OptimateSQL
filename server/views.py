@@ -14,6 +14,7 @@ from persistent import Persistent
 import transaction
 import pdb
 from BTrees.OOBTree import OOBTree
+from pyramid.httpexceptions import HTTPOk, HTTPNotFound
 
 @view_config(context=OptimateObject, renderer='json')
 @view_config(context=RootModel, renderer='json')
@@ -32,8 +33,8 @@ def childview(context, request):
         childrenlist.insert(len(childrenlist), {
             "Name":context.Subitem[key].Name,
             "Description":context.Subitem[key].Description,
-            "Subitem":[], "ID":context.Subitem[key].ID,
-            # "Parent": context.Subitem[key].__parent__})
+            "Subitem":[],
+            "ID":context.Subitem[key].ID,
             "Path": context.Subitem[key].Path})
 
     return childrenlist
@@ -45,10 +46,9 @@ def childview(context, request):
 @view_config(name = "add",context=BudgetItem, renderer='json')
 def additemview(context, request):
     """
-    The postview is called when an http POST request is sent from the client.
-    The method find the item that called the POST and adds a child to that parent.
+    The additemview is called when an http POST request is sent from the client.
+    The method adds a built in new OptimateObject to the current node.
     """
-    print "we're in add context view"
 
     if request.method == 'OPTIONS':
         return {"success" : True}
@@ -57,14 +57,9 @@ def additemview(context, request):
         newnode = OptimateObject("TestObject", "Test Object Description", context.ID)
         context.addItem(newnode.ID, newnode)
 
-        # bg = BudgetGroup("TestBG", "TestBG Description", context.ID)
-        # context.addItem(bg.ID, bg)
-
-        print "commiting"
         transaction.commit()
 
-        print "returning success"
-        return {"success" : True}
+        return HTTPOk()
 
 @view_config(name = "delete", context=OptimateObject, renderer='json')
 @view_config(name = "delete",context=RootModel, renderer='json')
@@ -73,29 +68,26 @@ def additemview(context, request):
 @view_config(name = "delete",context=BudgetItem, renderer='json')
 def deleteitemview(context, request):
     """
-    The postview is called when an http POST request is sent from the client.
-    The method find the item that called the POST and adds a child to that parent.
+    The deleteitemview is called using the address from the node to be deleted.
+    The node ID is sent in the request, and it is deleted from the context.
+    The try block catches if a node is not found, and returns a 404 http exception
     """
-    print "we're in delete context view"
 
     if request.method == 'OPTIONS':
         return {"success" : True}
     else:
         data = request.json_body
 
-        print context
-
         print "context deletion"
-        context.delete(data['ID'])
+        # If the item is not found, an HTTP 404 status is returned
+        try:
+            context.delete(data['ID'])
+        except Exception, e:
+            return HTTPNotFound()
 
-        print "new context"
-        print context
-        # context = None
-        print "commiting"
         transaction.commit()
 
-        print "returning success"
-        return {"success" : True}
+        return HTTPOk()
 
 @view_config(name = "paste",context=OptimateObject, renderer='json')
 @view_config(name = "paste",context=RootModel, renderer='json')
@@ -104,48 +96,37 @@ def deleteitemview(context, request):
 @view_config(name = "paste",context=BudgetItem, renderer='json')
 def pasteitemview(context, request):
     """
-    The postview is called when an http POST request is sent from the client.
-    The method find the item that called the POST and adds a child to that parent.
+    The pasteitemview is sent the path of the node that is to be copied.
+    That node is then found in the zodb, rebuilt with a new ID and path,
+    and added to the current node.
     """
-    print "we're in paste context view"
 
     if request.method == 'OPTIONS':
         return {"success" : True}
     else:
         print "pasting to item"
-
-        conn = get_connection(request)
-        app_root = appmaker(conn.root())
-
-        print "getting path"
-        path = request.json_body["Path"]
-        path = path[1:-1]
-        pathlist = path.split ("/")
-
+        pathlist = request.json_body["Path"][1:-1].split ("/")
+        app_root = appmaker( get_connection(request).root())
         copy = app_root
 
-        print "getting node to be copied"
         for pid in pathlist:
             copy = copy[pid]
 
-        print "rebuilding"
         # need to rebuild target with new id and path
-        try:
-            paste = rebuild (copy, context.ID)
-            print paste
-            context.addItem (paste.ID, paste)
+        paste = rebuild (copy, context.ID)
+        context.addItem (paste.ID, paste)
+        transaction.commit()
 
-            print "commiting"
-            transaction.commit()
-        except Exception, e:
-            print e
-            raise e
-
-        print "returning success"
-        return {"success" : True}
+        return HTTPOk()
 
 def rebuild(copy, parentid):
-    """ Recursively rebuilds the object and its children."""
+    """
+    Recursively rebuilds the object and its children.
+    The data from the old object is copied to the new object,
+    which automatically regenerates an ID and path.
+    The finished node with all its children returned.
+    """
+
     copiedobject = OptimateObject(copy.Name, copy.Description, parentid)
     if copy.Subitem != []:
         for key, value in copy.items():

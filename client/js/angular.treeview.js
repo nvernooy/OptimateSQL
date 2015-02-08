@@ -155,7 +155,7 @@
                                 // Modal dialogue with functions
                                 '<span class="additem" ng-show="node.selected">'+
                                 '<button ng-click="toggleModal()">+</button>'+
-                                    '<modal-dialog show="modalShown" dialog-title="Options" on-close="logClose()">'+
+                                    '<modal-dialog show="modalShown" dialog-title="Options" width="150px" on-close="logClose()">'+
                                             '<button data-ng-click="' + treeId + '.addItem(node.Path)">Add</button>'+
                                             '<button data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)">Delete</button>'+
                                             '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
@@ -211,10 +211,9 @@
 
                             // Function to copy a node
                               scope[treeId].copy = function(cnode) {
-                                        scope.copiednode = cnode
+                                        scope.copiednode = cnode;
                                         console.log("Path that is copied: " + scope.copiednode);
-                                        // tempNode = cnode;
-                                        //  console.log(tempNode);
+                                        alert('Node address copied')
                             }
 
                             // function to POST data to server to paste item
