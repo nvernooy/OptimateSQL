@@ -18,14 +18,93 @@
         data-node-children="children" >
     </div>
 */
+// Modal dialog module
+(function() {
+  var app;
 
+  app = angular.module("ngModal", []);
+
+  app.provider("ngModalDefaults", function() {
+    return {
+      options: {
+        closeButtonHtml: "<span class='ng-modal-close-x'>X</span>"
+      },
+      $get: function() {
+        return this.options;
+      },
+      set: function(keyOrHash, value) {
+        var k, v, _results;
+        if (typeof keyOrHash === 'object') {
+          _results = [];
+          for (k in keyOrHash) {
+            v = keyOrHash[k];
+            _results.push(this.options[k] = v);
+          }
+          return _results;
+        } else {
+          return this.options[keyOrHash] = value;
+        }
+      }
+    };
+  });
+
+  app.directive('modalDialog', [
+    'ngModalDefaults', '$sce', function(ngModalDefaults, $sce) {
+      return {
+        restrict: 'E',
+        scope: {
+          show: '=',
+          dialogTitle: '@',
+          onClose: '&?'
+        },
+        replace: true,
+        transclude: true,
+        link: function(scope, element, attrs) {
+          var setupCloseButton, setupStyle;
+          setupCloseButton = function() {
+            return scope.closeButtonHtml = $sce.trustAsHtml(ngModalDefaults.closeButtonHtml);
+          };
+          setupStyle = function() {
+            scope.dialogStyle = {};
+            if (attrs.width) {
+              scope.dialogStyle['width'] = attrs.width;
+            }
+            if (attrs.height) {
+              return scope.dialogStyle['height'] = attrs.height;
+            }
+          };
+          scope.hideModal = function() {
+            return scope.show = false;
+          };
+          scope.$watch('show', function(newVal, oldVal) {
+            if (newVal && !oldVal) {
+              document.getElementsByTagName("body")[0].style.overflow = "hidden";
+            } else {
+              document.getElementsByTagName("body")[0].style.overflow = "";
+            }
+            if ((!newVal && oldVal) && (scope.onClose != null)) {
+              return scope.onClose();
+            }
+          });
+          setupCloseButton();
+          return setupStyle();
+        },
+        template: "<div class='ng-modal' ng-show='show'>\n  <div class='ng-modal-overlay' ng-click='hideModal()'></div>\n  <div class='ng-modal-dialog' ng-style='dialogStyle'>\n    <span class='ng-modal-title' ng-show='dialogTitle && dialogTitle.length' ng-bind='dialogTitle'></span>\n    <div class='ng-modal-close' ng-click='hideModal()'>\n      <div ng-bind-html='closeButtonHtml'></div>\n    </div>\n    <div class='ng-modal-dialog-content' ng-transclude></div>\n  </div>\n</div>"
+      };
+    }
+  ]);
+
+}).call(this);
+
+
+// Treeview module
 (function ( angular ) {
     'use strict';
     // var optimateApp = angular.module( 'angularTreeview', [] );
 
     // Add the right click directive
     // optimateApp.directive(
-    angular.module( 'angularTreeview', [] )
+    angular.module( 'angularTreeview', ['ngModal'] )
     .directive(
         'treeModel', ['$compile', '$http', function( $compile, $http) {
             return {
@@ -73,35 +152,16 @@
                                     'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
                                 '</span>' +
 
+                                // Modal dialogue with functions
                                 '<span class="additem" ng-show="node.selected">'+
-                                    '<button ng-click="toggleModal()">+</button>'+
-                                                        '<modal-dialog show="modalShown" width="300px" height="50%">'+
-                                                            '<button data-ng-click="' + treeId + '.addItem(node.Path)">Add</button>'+
-                                                            '<button data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)">Delete</button>'+
-                                                            '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
-                                                            '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
-                                                        '</modal-dialog>'+
+                                '<button ng-click="toggleModal()">+</button>'+
+                                    '<modal-dialog show="modalShown" dialog-title="Options" on-close="logClose()">'+
+                                            '<button data-ng-click="' + treeId + '.addItem(node.Path)">Add</button>'+
+                                            '<button data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)">Delete</button>'+
+                                            '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
+                                            '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
+                                    '</modal-dialog>'+
                                 '</span>'+
-
-                                // Adding the "+" link add item
-                                // '<span class="additem" ng-show="node.selected">'+
-                                //     '<a data-ng-click="' + treeId + '.addItem(node.Path)" href="">+</a>'+
-                                // '</span>'+
-
-                                //Adding the "-" link delete item
-                                // '<span class="deleteitem">'+
-                                //     '<a data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)" href="">-</a>'+
-                                // '</span>'+
-
-                                // //Adding the "Copy" link to Copy item
-                                // '<span class="copyitem">'+
-                                //     '<a data-ng-click="' + treeId + '.copy(node.Path)" href="">Copy</a>'+
-                                // '</span>'+
-
-                                // //Adding the "Paste" link to Paste item
-                                // '<span class="pasteitem">'+
-                                //     '<a data-ng-click="' + treeId + '.paste(node.Path)" href="">Paste</a>'+
-                                // '</span>'+
 
                                 '<div data-ng-hide="node.collapsed" '+
                                     'data-tree-id="' + treeId +
@@ -111,9 +171,7 @@
                                     ' data-node-children=' + nodeChildren + '>'+
                                     ' data-node-path=' + nodePath + '>'+
                                 '</div>' +
-
                             '</li>' +
-
                         '</ul>';
 
 
@@ -176,13 +234,6 @@
                                 selectedNode.collapsed = !selectedNode.collapsed;
                             };
 
-                            // if node label right clicks
-                            // scope[treeId].selectNodeLabel = scope[treeId].selectNodeLabelRightClicked || function( selectedNode ){
-                            //     alert("Label right clicked");
-                            // }
-
-
-
                             //if node label clicks,
                             scope[treeId].selectNodeLabel = scope[treeId].selectNodeLabel || function( selectedNode ){
                                 //remove highlight from previous node
@@ -215,32 +266,5 @@
                     }
                 }
             };
-    }])
-    .directive('modalDialog', function() {
-          return {
-            restrict: 'E',
-            scope: {
-              show: '='
-            },
-            replace: true, // Replace with the template below
-            transclude: true, // we want to insert custom content inside the directive
-            link: function(scope, element, attrs) {
-              scope.dialogStyle = {};
-              if (attrs.width)
-                scope.dialogStyle.width = attrs.width;
-              if (attrs.height)
-                scope.dialogStyle.height = attrs.height;
-              scope.hideModal = function() {
-                scope.show = false;
-              };
-            },
-            template: "<div class='ng-modal' ng-show='show'>"+
-                                "<div class='ng-modal-overlay' ng-click='hideModal()'></div>"+
-                                "<div class='ng-modal-dialog' ng-style='dialogStyle'>"+
-                                    "<div class='ng-modal-close' ng-click='hideModal()'>X</div>"+
-                                    "<div class='ng-modal-dialog-content' ng-transclude></div>"+
-                                "</div>"+
-                            "</div>"
-          };
-    });
+    }]);
 })( angular );
