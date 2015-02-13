@@ -154,13 +154,20 @@
 
                                 // Modal dialogue with functions
                                 '<span class="additem" ng-show="node.selected">'+
-                                '<button ng-click="toggleModal()">+</button>'+
-                                    '<modal-dialog show="modalShown" dialog-title="Options" width="150px" on-close="logClose()">'+
-                                            '<button data-ng-click="' + treeId + '.addItem(node.Path)">Add</button>'+
-                                            '<button data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)">Delete</button>'+
-                                            '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
-                                            '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
-                                    '</modal-dialog>'+
+                                // '<button ng-click="toggleModal()">+</button>'+
+                                //     '<modal-dialog show="modalShown" dialog-title="Options" width="150px" on-close="logClose()">'+
+                                //             '<button data-ng-click="' + treeId + '.addItem(node.Path)">Add</button>'+
+                                //             '<button data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)">Delete</button>'+
+                                //             '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
+                                //             '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
+                                //     '</modal-dialog>'+
+                                    // '<button onClick="name=prompt(\'Enter the node name\',\'Name\');alert(name);">Add</button>'+
+                                    '<button onClick="name=prompt(\'Enter the node name\');"'+treeId+'".addItem(node.Path,name);">Add</button>'+
+                                    // '<button onClick="name=prompt(\'Enter the node name\');\'+treeId+\'.addItem(node.Path,name);">Add</button>'+
+                                    // '<button data-ng-click="' + treeId + '.addItem(node.Path, "prompt(\'Enter the node name\',\'Name\');"">Add</button>'+
+                                    '<button data-ng-click="' + treeId + '.deleteItem(node.Path)">Delete</button>'+
+                                    '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
+                                    '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
                                 '</span>'+
 
                                 '<div data-ng-hide="node.collapsed" '+
@@ -183,9 +190,9 @@
                             scope[treeId] = scope[treeId] || {};
 
                             // function to POST data to server to add item
-                            scope[treeId].addItem = function(path) {
+                            scope[treeId].addItem = function(path, name) {
                                 console.log("Adding data to: " +path);
-                                $http({method: 'POST', url: 'http://localhost:8080' + path + 'add'}).success(
+                                $http({method: 'POST', url: 'http://localhost:8080' + path + 'add', data:{'Name': name}}).success(
                                 // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
                                     function () {
                                         alert('Success: Child added');
@@ -194,14 +201,14 @@
                             }
 
                             // Function to delete data in server
-                              scope[treeId].deleteItem = function(path, id) {
-                                        console.log("Deleteing " + id + " from " + path);
+                              scope[treeId].deleteItem = function(path) {
+                                        console.log("Deleteing "+ path);
                                         // get parent path
-                                        var temp = path.substring (0, path.length-1);
-                                        console.log (temp)
-                                        var parentpath = temp.substring(0, temp.lastIndexOf("/"));
-                                        console.log (parentpath);
-                                        $http({method: 'POST', url: 'http://localhost:8080' + parentpath + '/delete', data:{'ID': id}}).success(
+                                        // var temp = path.substring (0, path.length-1);
+                                        // console.log (temp)
+                                        // var parentpath = temp.substring(0, temp.lastIndexOf("/"));
+                                        // console.log (parentpath);
+                                        $http({method: 'POST', url: 'http://localhost:8080' + path + '/delete'}).success(
                                         // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
                                             function () {
                                                 alert('Success: Item deleted');

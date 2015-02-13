@@ -54,7 +54,9 @@ def additemview(context, request):
         return {"success" : True}
     else:
         print "adding to item"
-        newnode = OptimateObject("TestObject", "Test Object Description", context.ID)
+        name = request.json_body['Name']
+
+        newnode = OptimateObject(name, "Test Object Description", context)
         context.addItem(newnode.ID, newnode)
 
         transaction.commit()
@@ -76,12 +78,12 @@ def deleteitemview(context, request):
     if request.method == 'OPTIONS':
         return {"success" : True}
     else:
-        data = request.json_body
-
         print "context deletion"
+        # Get the parent
+        parent = context.getParent()
         # If the item is not found, an HTTP 404 status is returned
         try:
-            context.delete(data['ID'])
+            parent.delete(context.ID)
         except Exception, e:
             return HTTPNotFound()
 
@@ -104,34 +106,39 @@ def pasteitemview(context, request):
     if request.method == 'OPTIONS':
         return {"success" : True}
     else:
-        print "pasting to item"
-        pathlist = request.json_body["Path"][1:-1].split ("/")
-        app_root = appmaker( get_connection(request).root())
-        copy = app_root
+        try:
+            print "pasting to item"
+            pathlist = request.json_body["Path"][1:-1].split ("/")
+            app_root = appmaker( get_connection(request).root())
+            sourceobject = app_root
 
-        for pid in pathlist:
-            copy = copy[pid]
+            for pid in pathlist:
+                sourceobject = sourceobject[pid]
 
-        # need to rebuild target with new id and path
-        paste = rebuild (copy, context.ID)
-        context.addItem (paste.ID, paste)
-        transaction.commit()
+            # need to rebuild target with new id and path
+            # paste = rebuild (sourceobject, context)
+            # context.addItem (paste.ID, paste)
+            context.paste(sourceobject)
+            transaction.commit()
 
-        return HTTPOk()
+            return HTTPOk()
+        except Exception, e:
+            print e
+            return HTTPError()
 
-def rebuild(copy, parentid):
-    """
-    Recursively rebuilds the object and its children.
-    The data from the old object is copied to the new object,
-    which automatically regenerates an ID and path.
-    The finished node with all its children returned.
-    """
+# def rebuild(copy, parentid):
+#     """
+#     Recursively rebuilds the object and its children.
+#     The data from the old object is copied to the new object,
+#     which automatically regenerates an ID and path.
+#     The finished node with all its children returned.
+#     """
 
-    copiedobject = OptimateObject(copy.Name, copy.Description, parentid)
-    if copy.Subitem != []:
-        for key, value in copy.items():
-            copiedchildren = rebuild(value, copiedobject.ID)
-            copiedobject.addItem(copiedchildren.ID, copiedchildren)
+#     copiedobject = OptimateObject(copy.Name, copy.Description, parentid)
+#     if copy.Subitem != []:
+#         for key, value in copy.items():
+#             copiedchildren = rebuild(value, copiedobject)
+#             copiedobject.addItem(copiedchildren.ID, copiedchildren)
 
-    return copiedobject
+#     return copiedobject
 

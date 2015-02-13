@@ -3,6 +3,7 @@ from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 import uuid
 import os.path
+import copy
 
 class OptimateObject (Persistent):
     """
@@ -10,8 +11,8 @@ class OptimateObject (Persistent):
     It inherits from Persistent, and implements the __getitem__ method
     """
 
-    def __init__(self, name, desc, parentid):
-        self.__parent__ = parentid
+    def __init__(self, name, desc, parent):
+        self.__parent__ = parent
         self.Name = name
         self.Description = desc
         self.ID = uuid.uuid1().hex
@@ -58,6 +59,26 @@ class OptimateObject (Persistent):
         self.Path = path+self.ID+"/"
         for key in self.Subitem.keys():
             self.Subitem[key].addPath(self.Path)
+
+    def getParent(self):
+        return self.__parent__
+
+    def resetID(self):
+        self.ID = uuid.uuid1().hex
+        self.__name__ = self.ID
+
+    def paste(self, sourceobject):
+        print sourceobject.ID
+        copiedsource = copy.deepcopy (sourceobject)
+        self.rebuild (copiedsource)
+        print copiedsource.ID
+        print sourceobject.ID
+        self.addItem(copiedsource.ID, copiedsource)
+
+    def rebuild (self, copiedsource):
+        copiedsource.resetID()
+        for key, value in copiedsource.items():
+            self.rebuild(value)
 
     def __getitem__ (self, key):
         """
@@ -124,13 +145,13 @@ class Project(OptimateObject):
     It inherits from OptimateObject.
     """
 
-    def __init__(self, nam, desc, parentid):
+    def __init__(self, nam, desc, parent):
         self.Subitem = OOBTree()
         self.Name = nam
         self.Description = desc
         self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
         self.__name__ = self.ID
-        self.__parent__ = parentid
+        self.__parent__ = parent
         self.Path = ""
 
 
@@ -142,13 +163,13 @@ class BudgetGroup(OptimateObject):
     It inherits from OptimateObject.
     """
 
-    def __init__(self, nam, desc, parentid):
+    def __init__(self, nam, desc, parent):
         self.Subitem = OOBTree()
         self.Name = nam
         self.Description = desc
         self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
         self.__name__ = self.ID
-        self.__parent__ = parentid
+        self.__parent__ = parent
         self.Path = ""
 
 
@@ -160,7 +181,7 @@ class BudgetItem(OptimateObject):
     It inherits from OptimateObject.
     """
 
-    def __init__(self, nam, desc, quan, rate, parentid):
+    def __init__(self, nam, desc, quan, rate, parent):
         self.Subitem = OOBTree()
         self.Name = nam
         self.Description = desc
@@ -168,7 +189,7 @@ class BudgetItem(OptimateObject):
         self.Rate = rate
         self.ID = uuid.uuid1().hex    # The ID is the hex value of a UUID
         self.__name__ = self.ID
-        self.__parent__ = parentid
+        self.__parent__ = parent
         self.Path = ""
 
 
@@ -199,7 +220,7 @@ def appmaker(zodb_root):
                     # Read the data and build the Project.
                     name = datafile.next().rstrip()
                     desc = datafile.next().rstrip()
-                    project = Project(name, desc, app_root.ID)
+                    project = Project(name, desc, app_root)
 
                     line = datafile.next().rstrip()
                     while line != "=" and line != "EOF":
@@ -207,7 +228,7 @@ def appmaker(zodb_root):
                         if line == "+":
                             gname = datafile.next().rstrip()
                             gdesc = datafile.next().rstrip()
-                            budgetgroup = BudgetGroup(gname, gdesc, project.ID)
+                            budgetgroup = BudgetGroup(gname, gdesc, project)
                             line = datafile.next().rstrip()
 
                             while line != "+" and line != "=":
@@ -219,7 +240,7 @@ def appmaker(zodb_root):
                                     irate = float(datafile.next().rstrip())
 
                                     budgetitem = BudgetItem(iname, idesc,
-                                                    iquantity, irate, budgetgroup.ID)
+                                                    iquantity, irate, budgetgroup)
 
                                     # Add the items to the BudgetGroup list.
                                     budgetgroup.addItem(budgetitem.ID, budgetitem)
@@ -241,16 +262,16 @@ def appmaker(zodb_root):
         # If it does not exist build the DB with hardcoded data
         else:
             #Build the Projects
-            project = Node("PName", "PDesc", app_root.ID)
-            projectb = Node("BPName", "BPDesc", app_root.ID)
+            project = Node("PName", "PDesc", app_root)
+            projectb = Node("BPName", "BPDesc", app_root)
 
             # Build the next level in the hierarchy
-            budgetgroup = Node("BGName", "BGDesc", project.ID)
-            budgetgroupb = Node("BBGName", "BBGDesc", projectb.ID)
+            budgetgroup = Node("BGName", "BGDesc", project)
+            budgetgroupb = Node("BBGName", "BBGDesc", projectb)
 
             # Build the next level
-            budgetitem = Leaf("BIName", "BIDesc", 10, 5, budgetgroup.ID)
-            budgetitemb = Leaf("BBIName", "BBIDesc", 4, 20, budgetgroupb.ID)
+            budgetitem = Leaf("BIName", "BIDesc", 10, 5, budgetgroup)
+            budgetitemb = Leaf("BBIName", "BBIDesc", 4, 20, budgetgroupb)
 
             # Build the hierarchy
             budgetgroup.addItem(budgetitem.ID,budgetitem)

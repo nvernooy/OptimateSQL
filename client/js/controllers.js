@@ -16,10 +16,18 @@
                     $scope.modalShown = !$scope.modalShown;
                      console.log("shown after: " + $scope.modalShown);
                   };
+
+                  $scope.openModal = function(){
+                    $scope.modalShown = true;
+                  };
                   $scope.logClose = function() {
-                      console.log('close!');
                       $scope.modalShown = false;
+                    console.log("modal closed: " + $scope.modalShown)
                     };
+                  $scope.closeModal = function(){
+                    $scope.modalShown = false;
+                    console.log("modal closed: " + $scope.modalShown)
+                  };
             }]
     );
 })();
