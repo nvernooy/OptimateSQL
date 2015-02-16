@@ -24,8 +24,9 @@ from pyramid.httpexceptions import HTTPOk, HTTPNotFound
 def childview(context, request):
     """
     This view is for when the user requests the children of an item.
-     It uses any of the obejcts as it's context, it extracts the subitem (children) from the object,
-     adds it to a list and returns it to the JSON renderer
+    It uses any of the obejcts as it's context,
+    it extracts the subitem (children) from the object,
+    adds it to a list and returns it to the JSON renderer
     """
 
     childrenlist = []
@@ -55,8 +56,9 @@ def additemview(context, request):
     else:
         print "adding to item"
         name = request.json_body['Name']
+        desc = request.json_body['Description']
 
-        newnode = OptimateObject(name, "Test Object Description", context)
+        newnode = OptimateObject(name, desc, context)
         context.addItem(newnode.ID, newnode)
 
         transaction.commit()
@@ -72,7 +74,8 @@ def deleteitemview(context, request):
     """
     The deleteitemview is called using the address from the node to be deleted.
     The node ID is sent in the request, and it is deleted from the context.
-    The try block catches if a node is not found, and returns a 404 http exception
+    The try block catches if a node is not found,
+    and returns a 404 http exception
     """
 
     if request.method == 'OPTIONS':

@@ -100,7 +100,8 @@ class OptimateObject (Persistent):
         all the items in the set.
         """
 
-        output = self.Name + ": " + self.Description + ", " + self.ID+ ", " + self.Path
+        output = self.Name + ": " + self.Description + ", " + self.ID + ", "
+        "" + self.Path
         if self.Subitem is not None:
             for key in self.Subitem.keys():
                 output += ("\n\t" + str(self.Subitem[key]))
@@ -194,7 +195,9 @@ class BudgetItem(OptimateObject):
 
 
 def appmaker(zodb_root):
-    """appmaker gets the ZODB connection and checks if there is anything in the root.
+    """
+    appmaker gets the ZODB connection
+    and checks if there is anything in the root.
     If there isn't then the database is built.
     Afterward the root is returned.
     """
@@ -240,10 +243,11 @@ def appmaker(zodb_root):
                                     irate = float(datafile.next().rstrip())
 
                                     budgetitem = BudgetItem(iname, idesc,
-                                                    iquantity, irate, budgetgroup)
+                                                iquantity, irate, budgetgroup)
 
                                     # Add the items to the BudgetGroup list.
-                                    budgetgroup.addItem(budgetitem.ID, budgetitem)
+                                    budgetgroup.addItem(budgetitem.ID,
+                                                        budgetitem)
                                     line = datafile.next().rstrip()
 
                                 # If the EOF is reached stop the iteration

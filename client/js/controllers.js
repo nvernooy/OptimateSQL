@@ -22,11 +22,11 @@
                   };
                   $scope.logClose = function() {
                       $scope.modalShown = false;
-                    console.log("modal closed: " + $scope.modalShown)
+                    console.log("modal closed: " + $scope.modalShown);
                     };
                   $scope.closeModal = function(){
-                    $scope.modalShown = false;
-                    console.log("modal closed: " + $scope.modalShown)
+                    // $scope.modalShown = false;
+                    console.log("modal closed: " + $scope.modalShown);
                   };
             }]
     );
