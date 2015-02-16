@@ -48,7 +48,8 @@ def childview(context, request):
 def additemview(context, request):
     """
     The additemview is called when an http POST request is sent from the client.
-    The method adds a built in new OptimateObject to the current node.
+    The method adds a new node with attributes as specified by the user
+    to the current node.
     """
 
     if request.method == 'OPTIONS':
@@ -57,10 +58,17 @@ def additemview(context, request):
         print "adding to item"
         name = request.json_body['Name']
         desc = request.json_body['Description']
+        objecttype = request.json_body['Type']
 
-        newnode = OptimateObject(name, desc, context)
-        context.addItem(newnode.ID, newnode)
-
+        if objecttype == 'project':
+            newnode = Project(name, desc, context)
+            context.addItem(newnode.ID, newnode)
+        elif objecttype == 'budgetgroup':
+            newnode = BudgetGroup(name, desc, context)
+            context.addItem(newnode.ID, newnode)
+        elif objecttype == 'budgetitem':
+            newnode = BudgetItem(name, desc, 10, 10, context)
+            context.addItem(newnode.ID, newnode)
         transaction.commit()
 
         return HTTPOk()

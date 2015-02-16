@@ -185,27 +185,24 @@
 
                                 '<span class="additem" ng-show="node.selected">'+
                                 '<button ng-click="showoptions = true;">+</button>'+
-                                    '<modal-dialog show=showoptions dialog-title="Options" width="150px" on-close="logClose()">'+
+                                    '<modal-dialog show=showoptions dialog-title="Options" width="150px">'+
                                             // When Add button is pressed another modal dialog option with user options
                                             '<button data-ng-click="showinput = true;">Add</button>'+
                                                 '<modal-dialog show=showinput dialog-title="Enter data" width="300px" on-close="logClose()">'+
-                                                    'Name: '+
+                                                    'Name:<br>'+
                                                     '<input type="text" id="name" autofocus value = "" />'+
-                                                    'Description: '+
+                                                    '<br>Description:<br>'+
                                                     '<input type="text" id="description" autofocus value = "" />'+
-                                                    '<input type="submit" value="Add" data-ng-click="' + treeId + '.addItem(node.Path)" />'+
+                                                    '<br>Type:<br>'+
+                                                    '<input type="radio" name="type" value="project">Project<br>'+
+                                                    '<input type="radio" name="type" value="budgetgroup">BudgetGroup<br>'+
+                                                    '<input type="radio" name="type" value="budgetitem">BudgetItem<br>'+
+                                                    '<input type="submit" value="Add" data-ng-click="' + treeId + '.addItem(node.Path);closeModal();console.log(10);" />'+
                                                 '</modal-dialog>'+
                                             '<button data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)">Delete</button>'+
                                             '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
                                             '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
                                     '</modal-dialog>'+
-                                    // '<button onClick="name=prompt(\'Enter the node name\',\'Name\');alert(name);">Add</button>'+
-                                    // '<button onClick="name=prompt(\'Enter the node name\');"'+treeId+'".addItem(node.Path,name);">Add</button>'+
-                                    // '<button onClick="name=prompt(\'Enter the node name\');\'+treeId+\'.addItem(node.Path,name);">Add</button>'+
-                                    // '<button data-ng-click="' + treeId + '.addItem(node.Path, "prompt(\'Enter the node name\',\'Name\');"">Add</button>'+
-                                    // '<button data-ng-click="' + treeId + '.deleteItem(node.Path)">Delete</button>'+
-                                    // '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
-                                    // '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
                                 '</span>'+
 
                                 '<div data-ng-hide="node.collapsed" '+
@@ -228,19 +225,31 @@
                             scope[treeId] = scope[treeId] || {};
 
                             // function to POST data to server to add item
+                            // Get values from the user input
                             scope[treeId].addItem = function(path) {
                                 var name = document.getElementById("name").value;
                                 var description = document.getElementById("description").value;
+                                var radios = document.getElementsByName('type');
+                                var type;
+                                for (var i = 0, length = radios.length; i < length; i++) {
+                                    if (radios[i].checked) {
+                                        type = radios[i].value;
+                                        break;
+                                    }
+                                }
+
+
                                 console.log("Adding "+ name + ", " + description + " to: " +path);
                                 $http({
                                     method: 'POST',
                                     url: 'http://localhost:8080' + path + 'add',
-                                    data:{'Name': name, "Description":description}
+                                    data:{  'Name': name,
+                                            'Description':description,
+                                            'Type': type}
                                 }).success(
-                                // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
-                                        function () {
-                                            alert('Success: Child added');
-                                        }
+                                    function () {
+                                        alert('Success: Child added');
+                                    }
                                 );
                             }
 
@@ -251,7 +260,6 @@
                                     method: 'POST',
                                     url:'http://localhost:8080'+path+'/delete'
                                 }).success(
-                                // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
                                         function () {
                                             alert('Success: Item deleted');
                                         }
@@ -275,7 +283,6 @@
                                     url: 'http://localhost:8080' + path + 'paste',
                                     data:{'Path': scope.copiednode}
                                 }).success(
-                                // $http({method: 'POST', url: 'http://localhost:8080/', data: {ID: itemId, Parent:parentid}}).success(
                                     function () {
                                         alert('Success: Node pasted');
                                     }
