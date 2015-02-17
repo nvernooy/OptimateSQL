@@ -182,26 +182,60 @@
                                 '</span>' +
 
                                 // Modal dialogue with functions
-
-                                '<span class="additem" ng-show="node.selected">'+
-                                '<button ng-click="showoptions = true;">+</button>'+
-                                    '<modal-dialog show=showoptions dialog-title="Options" width="150px">'+
-                                            // When Add button is pressed another modal dialog option with user options
-                                            '<button data-ng-click="showinput = true;">Add</button>'+
-                                                '<modal-dialog show=showinput dialog-title="Enter data" width="300px" on-close="logClose()">'+
+                                '<span class="additem" data-ng-show="node.selected">'+
+                                    '<button data-ng-click="showoptions = true;">+</button>'+
+                                    '<modal-dialog  show=showoptions '+
+                                                    'dialog-title="Options" '+
+                                                    'width="150px">'+
+                                            // When Add button is pressed
+                                            // another modal dialog opens
+                                            '<button data-ng-click="showinput=true">Add</button>'+
+                                            '<modal-dialog show=showinput '+
+                                                            'dialog-title="Enter data" '+
+                                                            'width="300px">'+
+                                                '<form data-ng-submit="'+
+                                                            treeId + '.addItem(node.Path)">'+
                                                     'Name:<br>'+
-                                                    '<input type="text" id="name" autofocus value = "" />'+
+                                                    '<input type="text" '+
+                                                            'name="inputName" '+
+                                                            'data-ng-model="formData.inputName" '+
+                                                            'required '+
+                                                            'autofocus>'+
                                                     '<br>Description:<br>'+
-                                                    '<input type="text" id="description" autofocus value = "" />'+
+                                                    '<input type="text" '+
+                                                            'name="inputDescription" '+
+                                                            'data-ng-model="formData.inputDescription" '+
+                                                            'required '+
+                                                            'autofocus>'+
                                                     '<br>Type:<br>'+
-                                                    '<input type="radio" name="type" value="project">Project<br>'+
-                                                    '<input type="radio" name="type" value="budgetgroup">BudgetGroup<br>'+
-                                                    '<input type="radio" name="type" value="budgetitem">BudgetItem<br>'+
-                                                    '<input type="submit" value="Add" data-ng-click="' + treeId + '.addItem(node.Path);closeModal();console.log(10);" />'+
-                                                '</modal-dialog>'+
-                                            '<button data-ng-click="' + treeId + '.deleteItem(node.Path, node.ID)">Delete</button>'+
-                                            '<button data-ng-click="' + treeId + '.copy(node.Path)">Copy</button>'+
-                                            '<button data-ng-click="' + treeId + '.paste(node.Path)">Paste</button>'+
+                                                    '<input type="radio" '+
+                                                            'data-ng-model="formData.inputType" '+
+                                                            'value="project">'+
+                                                            'Project<br>'+
+                                                    '<input type="radio" '+
+                                                            'data-ng-model="formData.inputType" '+
+                                                            'value="budgetgroup">'+
+                                                            'BudgetGroup<br>'+
+                                                    '<input type="radio" '+
+                                                            'data-ng-model="formData.inputType" '+
+                                                            'value="budgetitem">'+
+                                                            'BudgetItem<br>'+
+                                                    '<input type="submit" '+
+                                                            'value="Add"/>'+
+                                                '</form>'+
+                                            '</modal-dialog>'+
+                                            '<button data-ng-click='+
+                                                        '"' + treeId + '.deleteItem(node.Path, node.ID)">'+
+                                                        'Delete'+
+                                            '</button>'+
+                                            '<button data-ng-click='+
+                                                        '"' + treeId + '.copy(node.Path)">'+
+                                                        'Copy'+
+                                            '</button>'+
+                                            '<button data-ng-click='+
+                                                        '"' + treeId + '.paste(node.Path)">'+
+                                                        'Paste'+
+                                            '</button>'+
                                     '</modal-dialog>'+
                                 '</span>'+
 
@@ -227,19 +261,14 @@
                             // function to POST data to server to add item
                             // Get values from the user input
                             scope[treeId].addItem = function(path) {
-                                var name = document.getElementById("name").value;
-                                var description = document.getElementById("description").value;
-                                var radios = document.getElementsByName('type');
-                                var type;
-                                for (var i = 0, length = radios.length; i < length; i++) {
-                                    if (radios[i].checked) {
-                                        type = radios[i].value;
-                                        break;
-                                    }
-                                }
+                                var name = scope.formData.inputName;
+                                scope.formData.inputItemName = "";
+                                var description = scope.formData.inputDescription;
+                                scope.formData.inputDescription = "";
+                                var type = scope.formData.inputType;
 
-
-                                console.log("Adding "+ name + ", " + description + " to: " +path);
+                                console.log("Adding a " + type + " " + name +
+                                    ", " + description + " to: " +path);
                                 $http({
                                     method: 'POST',
                                     url: 'http://localhost:8080' + path + 'add',
@@ -249,16 +278,17 @@
                                 }).success(
                                     function () {
                                         alert('Success: Child added');
+                                        console.log("added");
                                     }
                                 );
                             }
 
                             // Function to delete data in server
                             scope[treeId].deleteItem = function(path) {
-                                console.log("Deleteing "+ path);
+                                console.log("Deleting "+ path);
                                 $http({
                                     method: 'POST',
-                                    url:'http://localhost:8080'+path+'/delete'
+                                    url:'http://localhost:8080'+path+'delete'
                                 }).success(
                                         function () {
                                             alert('Success: Item deleted');
