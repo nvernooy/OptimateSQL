@@ -48,13 +48,13 @@ CBIDesc
 C2BGName
 C2BGDesc
 *
-C2.1CIName
-C2.1CIDesc
+C2.1BIName
+C2.1BIDesc
 10
 10
 *
-CB2.2CIName
-C2.1CIDesc
+C2.2BIName
+C2.1BIDesc
 10
 10
 EOF

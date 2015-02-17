@@ -262,7 +262,7 @@
                             // Get values from the user input
                             scope[treeId].addItem = function(path) {
                                 var name = scope.formData.inputName;
-                                scope.formData.inputItemName = "";
+                                scope.formData.inputName = "";
                                 var description = scope.formData.inputDescription;
                                 scope.formData.inputDescription = "";
                                 var type = scope.formData.inputType;
@@ -346,13 +346,14 @@
                                 // get path from the node
                                 // and go to that path with http
                                 var path = scope[treeId].currentNode.Path;
+                                console.log(path);
                                 $http.get('http://127.0.0.1:8080'+path).success
                                     (
                                     function(data)
                                         {
                                             console.log("Htpp request success: "+ data);
                                              // Append the response data to the
-                                             // subitem (chilren) of the
+                                             // subitem (children) of the
                                              // current node
                                             scope[treeId].currentNode.Subitem =  data;
                                         }

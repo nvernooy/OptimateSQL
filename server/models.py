@@ -4,6 +4,7 @@ from BTrees.OOBTree import OOBTree
 import uuid
 import os.path
 import copy
+import sys
 
 class OptimateObject (Persistent):
     """
@@ -61,24 +62,74 @@ class OptimateObject (Persistent):
             self.Subitem[key].addPath(self.Path)
 
     def getParent(self):
+        """
+        Returns the parent of this object
+        """
+
         return self.__parent__
 
+    def setParent(self, parent):
+        """
+        Sets the parent of this object.
+        """
+
+        self.__parent__ = parent
+
     def resetID(self):
+        """
+        Resets the ID and name of this object
+        """
+
         self.ID = uuid.uuid1().hex
         self.__name__ = self.ID
 
     def paste(self, sourceobject):
-        print sourceobject.ID
-        copiedsource = copy.deepcopy (sourceobject)
-        self.rebuild (copiedsource)
-        print copiedsource.ID
-        print sourceobject.ID
+        """
+        The Paste method determines the type of the sourceobject to be pasted,
+        then makes a new object of that type and copies all the attributes to it.
+        This is then done recursively to its' subitems in the rebuild method.
+        It returns the object to be pasted.
+        """
+
+        # copiedsource = copy.deepcopy (sourceobject)
+        # copiedsource.setParent(self)
+        # self.rebuild (copiedsource)
+        # print copiedsource
+        # self.addItem(copiedsource.ID, copiedsource)
+        if isinstance(sourceobject, Project):
+            copiedsource = Project(sourceobject.Name, sourceobject.Description, sourceobject.getParent())
+        elif isinstance(sourceobject, BudgetGroup):
+            copiedsource = BudgetGroup(sourceobject.Name, sourceobject.Description, sourceobject.getParent())
+        else:
+            copiedsource = BudgetItem(sourceobject.Name, sourceobject.Description, sourceobject.Quantity, sourceobject.Rate, sourceobject.getParent())
+
+        copiedsource = self.rebuild(copiedsource, sourceobject.Subitem)
         self.addItem(copiedsource.ID, copiedsource)
 
-    def rebuild (self, copiedsource):
-        copiedsource.resetID()
-        for key, value in copiedsource.items():
-            self.rebuild(value)
+    def rebuild(self, pastedsource, sourceobject):
+        """
+        Rebuild recursively creates a new object and copies all the attributes
+        to it and its children.
+        """
+
+        for key, value in sourceobject.items():
+            if isinstance(value, Project):
+                copiedsource = Project(value.Name, value.Description, value.getParent())
+            elif isinstance(value, BudgetGroup):
+                copiedsource = BudgetGroup(value.Name, value.Description, value.getParent())
+            else:
+                copiedsource = BudgetItem(value.Name, value.Description, value.Quantity, value.Rate, value.getParent())
+
+            self.rebuild(copiedsource, value.Subitem)
+            pastedsource.addItem(copiedsource.ID, copiedsource)
+        return pastedsource
+
+    # def rebuild (self, copiedsource):
+    #     copiedsource.resetID()
+
+    #     for key, value in copiedsource.items():
+    #         value.setParent(copiedsource)
+    #         self.rebuild(value)
 
     def __getitem__ (self, key):
         """
