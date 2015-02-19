@@ -3,18 +3,27 @@ __init__.py turns the directory into a package
 and set the configuration for the server
 """
 
+# from pyramid.config import Configurator
+# from pyramid.events import NewResponse
+# from pyramid.events import subscriber
+# from pyramid.events import NewRequest
+# from pyramid_zodbconn import get_connection
+# from models import appmaker
+
 from pyramid.config import Configurator
-from pyramid.events import NewResponse
-from pyramid.events import subscriber
-from pyramid.events import NewRequest
-from pyramid_zodbconn import get_connection
-from models import appmaker
+from sqlalchemy import engine_from_config
 
 
-def root_factory(request):
-    """Make the ZODB connection and get the root from appmaker."""
-    conn = get_connection(request)
-    return appmaker(conn.root())
+from .models import (
+    DBSession,
+    Base,
+    )
+
+
+# def root_factory(request):
+#     """Make the ZODB connection and get the root from appmaker."""
+#     conn = get_connection(request)
+#     return appmaker(conn.root())
 
 
 @subscriber(NewResponse)
@@ -34,17 +43,16 @@ def handleResponse(event):
 
 
 def main(global_config, **settings):
-    """Configure the requirements for the server.
-    The root factory returns the zodb root
+    """ This function returns a Pyramid WSGI application.
     """
+    engine = engine_from_config(settings, 'sqlalchemy.')
+    DBSession.configure(bind=engine)
+    Base.metadata.bind = engine
 
     config = Configurator(root_factory=root_factory, settings=settings)
-    config.include('pyramid_zodbconn')
     config.include('pyramid_chameleon')
     config.add_subscriber(handleResponse, NewRequest)
     config.add_static_view('static', 'static', cache_max_age=3600)
 
-    # config.add_route('additem', '/additem')
-    # config.add_route('root', '/')
     config.scan('.views')
     return config.make_wsgi_app()

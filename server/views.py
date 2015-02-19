@@ -5,16 +5,41 @@ the only response is a data structure containing a hierarchy
 of the cost estimate items
 """
 
-from pyramid.view import view_config
-from pyramid.response import Response
-from models import OptimateObject, RootModel, Project, BudgetGroup, BudgetItem
-from models import appmaker
-from pyramid_zodbconn import get_connection
-from persistent import Persistent
-import transaction
-import pdb
-from BTrees.OOBTree import OOBTree
-from pyramid.httpexceptions import HTTPOk, HTTPNotFound
+# from pyramid.view import view_config
+# from pyramid.response import Response
+# from models import OptimateObject, RootModel, Project, BudgetGroup, BudgetItem
+# from models import appmaker
+# from pyramid_zodbconn import get_connection
+# from persistent import Persistent
+# import transaction
+# import pdb
+# from BTrees.OOBTree import OOBTree
+# from pyramid.httpexceptions import HTTPOk, HTTPNotFound
+
+import re
+from docutils.core import publish_parts
+
+from pyramid.httpexceptions import (
+    HTTPFound,
+    HTTPNotFound,
+    )
+
+from pyramid.view import (
+    view_config,
+    forbidden_view_config,
+    )
+
+from pyramid.security import (
+    remember,
+    forget,
+    )
+
+from .security import USERS
+
+from .models import (
+    DBSession,
+    Page,
+    )
 
 @view_config(context=OptimateObject, renderer='json')
 def childview(context, request):
