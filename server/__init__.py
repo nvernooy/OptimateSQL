@@ -4,9 +4,9 @@ and set the configuration for the server
 """
 
 # from pyramid.config import Configurator
-# from pyramid.events import NewResponse
-# from pyramid.events import subscriber
-# from pyramid.events import NewRequest
+from pyramid.events import NewResponse
+from pyramid.events import subscriber
+from pyramid.events import NewRequest
 # from pyramid_zodbconn import get_connection
 # from models import appmaker
 
@@ -49,10 +49,11 @@ def main(global_config, **settings):
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
 
-    config = Configurator(root_factory=root_factory, settings=settings)
+    config = Configurator(settings=settings)
     config.include('pyramid_chameleon')
     config.add_subscriber(handleResponse, NewRequest)
     config.add_static_view('static', 'static', cache_max_age=3600)
 
+    config.add_route('root', '/')
     config.scan('.views')
     return config.make_wsgi_app()

@@ -196,7 +196,7 @@ Base = declarative_base()
 
 #         return output
 
-class Parent(Base):
+class Root(Base):
     """
     A Persistent class that acts as the root object in the ZODB
     It has an OOBTree of the children of this object
@@ -204,16 +204,16 @@ class Parent(Base):
     """
 
     __tablename__ = 'Parent'
-    ID = Column(Integer, primary_key=True)
+    ID = Column(Text, primary_key=True)
 
-class Children(Base):
-    """
-    A table of only the children of a parent
-    """
+# class Children(Base):
+#     """
+#     A table of only the children of a parent
+#     """
 
-    __tablename__ = 'Children'
-    ID = Column(Integer, primary_key=True)
-    ParentID = Column(Integer)
+#     __tablename__ = 'Children'
+#     ID = Column(Integer, primary_key=True)
+#     ParentID = Column(Integer)
 
 
 # class RootModel(OptimateObject):
@@ -256,9 +256,10 @@ class Project(Base):
     """
 
     __tablename__ = 'Projects'
-    ID = Column(Integer, primary_key=True)
+    ID = Column(Text, primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
+    ParentID = Column(Text)
 
 
 
@@ -288,9 +289,10 @@ class BudgetGroup(Base):
     """
 
     __tablename__ = 'BudgetGroups'
-    ID = Column(Integer, primary_key=True)
+    ID = Column(Text, primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
+    ParentID = Column(Text)
 
 # class BudgetGroup(OptimateObject):
 #     """
@@ -318,11 +320,12 @@ class BudgetItem(Base):
     """
 
     __tablename__ = 'BudgetItems'
-    ID = Column(Integer, primary_key=True)
+    ID = Column(Text, primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
     Quantity = Column(Integer)
     Rate = Column(Integer)
+    ParentID = Column(Text)
 
 
 # class BudgetItem(OptimateObject):
