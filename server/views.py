@@ -18,6 +18,7 @@ of the cost estimate items
 
 import re
 from docutils.core import publish_parts
+import sqlalchemy
 
 from pyramid.httpexceptions import (
     HTTPFound,
@@ -37,11 +38,19 @@ from .models import (
 
 @view_config(route_name='root', renderer='json')
 def rootview(request):
-    root = DBSession.query(Root).filter_by(ID='0').first()
+    # root = DBSession.query(Root).first()
+    # print root
+    # Base = sqlalchemy.ext.declarative.declarative_base()
+    # print Base.metadata.tables.keys()
+    # root = Root(ID='0')
+    # DBSession.add(root)
+    projectquery = DBSession.query(Project).filter_by(ParentID='0').all()
+    bgquery = DBSession.query(BudgetGroup).filter_by(ParentID='0').all()
+    biquery = DBSession.query(BudgetItem).filter_by(ParentID='0').all()
 
-    return [{"Name": "testing", "Description": "trstdc", "Subitem": [], "ID": "0", "Path": "/"}]
-    # page = DBSession.query(BudgetGroup).filter_by(name=pagename).first()
-    # page = DBSession.query(BudgetItem).filter_by(name=pagename).first()
+    rootlist = [projectquery, bgquery, biquery]
+
+    return rootlist
 
 # @view_config(context=OptimateObject, renderer='json')
 # def childview(context, request):
