@@ -2,18 +2,16 @@
 setyp.py contains the set of modules required by this package
 and sets up the development enviroment for pyramid
 """
+
 import os
-from setuptools import setup
+
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
-
-# requires = [
-#     'pyramid',
-#     'pyramid_chameleon',
-#     'pyramid_zodbconn',
-#     'transaction',
-#     'ZODB3',
-# ]
+with open(os.path.join(here, 'README.txt')) as f:
+    README = f.read()
+with open(os.path.join(here, 'CHANGES.txt')) as f:
+    CHANGES = f.read()
 
 requires = [
     'pyramid',
@@ -25,15 +23,31 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
     'docutils',
-    'WebTest',
     ]
 
 setup(name='server',
+      version='0.0',
+      description='server',
+      long_description=README + '\n\n' + CHANGES,
+      classifiers=[
+        "Programming Language :: Python",
+        "Framework :: Pyramid",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+        ],
+      author='',
+      author_email='',
+      url='',
+      keywords='web wsgi bfg pylons pyramid',
+      packages=find_packages(),
+      include_package_data=True,
+      zip_safe=False,
+      test_suite='server',
       install_requires=requires,
       entry_points="""\
       [paste.app_factory]
       main = server:main
       [console_scripts]
-      initialize_tutorial_db = server.scripts.initializedb:main
+      initialize_server_db = server.scripts.initializedb:main
       """,
-)
+      )

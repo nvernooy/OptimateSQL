@@ -1,30 +1,11 @@
-"""
-views.py sets up the view in the web file
-it uses json as a renderer
-the only response is a data structure containing a hierarchy
-of the cost estimate items
-"""
-
-# from pyramid.view import view_config
-# from pyramid.response import Response
-# from models import OptimateObject, RootModel, Project, BudgetGroup, BudgetItem
-# from models import appmaker
-# from pyramid_zodbconn import get_connection
-# from persistent import Persistent
-# import transaction
-# import pdb
-# from BTrees.OOBTree import OOBTree
-# from pyramid.httpexceptions import HTTPOk, HTTPNotFound
-
+import cgi
 import re
 from docutils.core import publish_parts
-import sqlalchemy
 
 from pyramid.httpexceptions import (
     HTTPFound,
     HTTPNotFound,
     )
-
 from pyramid.view import view_config
 
 from .models import (
@@ -35,22 +16,35 @@ from .models import (
     BudgetItem,
     )
 
+from sqlalchemy import *
+from sqlalchemy.orm import *
 
-@view_config(route_name='root', renderer='json')
-def rootview(request):
-    # root = DBSession.query(Root).first()
-    # print root
-    # Base = sqlalchemy.ext.declarative.declarative_base()
-    # print Base.metadata.tables.keys()
-    # root = Root(ID='0')
-    # DBSession.add(root)
-    projectquery = DBSession.query(Project).filter_by(ParentID='0').all()
-    bgquery = DBSession.query(BudgetGroup).filter_by(ParentID='0').all()
-    biquery = DBSession.query(BudgetItem).filter_by(ParentID='0').all()
 
-    rootlist = [projectquery, bgquery, biquery]
+@view_config(route_name= 'home', renderer='json')
+def childview(context, request):
+    """
+    This view is for when the user requests the children of an item.
+    It uses any of the obejcts as it's context,
+    it extracts the subitem (children) from the object,
+    adds it to a list and returns it to the JSON renderer
+    """
+    childrenlist = []
 
-    return rootlist
+    projectquery = DBSession.query(Project).filter_by(ParentID="0").all()
+    bgquery = DBSession.query(BudgetGroup).filter_by(ParentID="0").all()
+    biquery = DBSession.query(BudgetItem).filter_by(ParentID="0").all()
+
+    for value in projectquery:
+        childrenlist.insert(len(childrenlist), {
+            "Name":value.Name,
+            "Description":value.Description,
+            "Subitem":[],
+            "ID":value.ID,
+            "Path": "/" + value.ID+"/"})
+
+
+    return childrenlist
+
 
 # @view_config(context=OptimateObject, renderer='json')
 # def childview(context, request):
@@ -153,6 +147,3 @@ def rootview(request):
 #         transaction.commit()
 
 #         return HTTPOk()
-
-
-

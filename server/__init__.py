@@ -2,29 +2,17 @@
 __init__.py turns the directory into a package
 and set the configuration for the server
 """
-
-# from pyramid.config import Configurator
 from pyramid.events import NewResponse
 from pyramid.events import subscriber
 from pyramid.events import NewRequest
-# from pyramid_zodbconn import get_connection
-# from models import appmaker
 
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
-
 
 from .models import (
     DBSession,
     Base,
     )
-
-
-# def root_factory(request):
-#     """Make the ZODB connection and get the root from appmaker."""
-#     conn = get_connection(request)
-#     return appmaker(conn.root())
-
 
 @subscriber(NewResponse)
 def handleResponse(event):
@@ -51,9 +39,8 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings)
     config.include('pyramid_chameleon')
-    config.add_subscriber(handleResponse, NewRequest)
     config.add_static_view('static', 'static', cache_max_age=3600)
 
-    config.add_route('root', '/')
-    config.scan('.views')
+    config.add_route('home', '/')
+    config.scan()
     return config.make_wsgi_app()
