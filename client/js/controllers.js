@@ -4,7 +4,7 @@
   var myApp = angular.module('myApp', ['angularTreeview']);
   myApp.controller('myController',['$scope', '$http',
     function($scope, $http){
-      $http.get('http://127.0.0.1:8080').success
+      $http.get('http://127.0.0.1:8100').success
       (function(data)
         {$scope.roleList = data;}
       );

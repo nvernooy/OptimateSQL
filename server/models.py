@@ -7,6 +7,7 @@ from sqlalchemy import (
     Index,
     Integer,
     Text,
+    ForeignKey,
     )
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -14,6 +15,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import (
     scoped_session,
     sessionmaker,
+    relationship,
+    backref,
     )
 
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -28,9 +31,11 @@ class Root(Base):
     """
 
     __tablename__ = 'Root'
-    key = Column(Integer, primary_key=True)
-    # ID = Column(Text, primary_key=True)
-    ID = Column(Text)
+    ID = Column(Integer, primary_key=True)
+
+    Children = relationship("Project",
+                            backref='Parent',
+                            cascade="all, delete, delete-orphan")
 
 class Project(Base):
     """
@@ -39,12 +44,20 @@ class Project(Base):
     """
 
     __tablename__ = 'Project'
-    key = Column(Integer, primary_key=True)
-    # ID = Column(Text, primary_key=True)
-    ID = Column(Text)
+    ID = Column(Integer, primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
-    ParentID = Column(Text)
+    ParentID = Column(Integer, ForeignKey('Root.ID'))
+
+    # Parent = relationship("Root",
+    #                         backref='Children',
+    #                         primaryjoin="and_(Project.ParentID==Root.ID)",
+    #                         cascade="all, delete, delete-orphan")
+
+    Children = relationship("BudgetGroup",
+                            backref='Parent',
+                            cascade="all, delete, delete-orphan")
+
 
 class BudgetGroup(Base):
     """
@@ -53,12 +66,19 @@ class BudgetGroup(Base):
     """
 
     __tablename__ = 'BudgetGroup'
-    key = Column(Integer, primary_key=True)
-    # ID = Column(Text, primary_key=True)
-    ID = Column(Text)
+    ID = Column(Integer, primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
-    ParentID = Column(Text)
+    ParentID = Column(Integer, ForeignKey('Project.ID'))
+
+    # Parent = relationship("Project",
+    #                         primaryjoin="and_(BudgetGroup.ParentID==Project.ID)",
+    #                         backref='Children',
+    #                         cascade="all, delete, delete-orphan")
+
+    Children = relationship("BudgetItem",
+                            backref='Parent',
+                            cascade="all, delete, delete-orphan")
 
 class BudgetItem(Base):
     """
@@ -67,11 +87,14 @@ class BudgetItem(Base):
     """
 
     __tablename__ = 'BudgetItem'
-    key = Column(Integer, primary_key=True)
-    # ID = Column(Text, primary_key=True)
-    ID = Column(Text)
+    ID = Column(Integer, primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
     Quantity = Column(Integer)
     Rate = Column(Integer)
-    ParentID = Column(Text)
+    ParentID = Column(Integer, ForeignKey('BudgetGroup.ID'))
+
+    # Parent = relationship("BudgetGroup",
+    #                         primaryjoin="and_(BudgetItem.ParentID==BudgetGroup.ID)",
+    #                         backref='Children',
+    #                         cascade="all, delete, delete-orphan")
