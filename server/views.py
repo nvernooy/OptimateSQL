@@ -92,7 +92,7 @@ def additemview(request):
     if request.method == 'OPTIONS':
         return {"success" : True}
     else:
-        parentid = int(request.matchdict['id'])
+        parentid = request.matchdict['id']
         print "adding to item: " + str(parentid)
 
         name = request.json_body['Name']
@@ -132,29 +132,43 @@ def deleteitemview(request):
 
         return HTTPOk()
 
-# @view_config(name = "paste",context=OptimateObject, renderer='json')
-# def pasteitemview(context, request):
-#     """
-#     The pasteitemview is sent the path of the node that is to be copied.
-#     That node is then found in the zodb, rebuilt with a new ID and path,
-#     and added to the current node.
-#     """
+@view_config(route_name = "pasteview", renderer='json')
+def pasteitemview(request):
+    """
+    The pasteitemview is sent the path of the node that is to be copied.
+    That node is then found in the zodb, rebuilt with a new ID and path,
+    and added to the current node.
+    """
 
-#     if request.method == 'OPTIONS':
-#         return {"success" : True}
-#     else:
-#         print "pasting to item"
-#         pathlist = request.json_body["Path"][1:-1].split ("/")
-#         app_root = appmaker( get_connection(request).root())
-#         sourceobject = app_root
+    if request.method == 'OPTIONS':
+        return {"success" : True}
+    else:
+        print "pasting to item"
+        sourceid = request.json_body["Path"][1:-1]
+        print sourceid
 
-#         for pid in pathlist:
-#             sourceobject = sourceobject[pid]
+        destinationid = request.matchdict['id']
 
-#         # need to rebuild target with new id and path
-#         # paste = rebuild (sourceobject, context)
-#         # context.addItem (paste.ID, paste)
-#         context.paste(sourceobject)
-#         transaction.commit()
+        source= DBSession.query(Project).filter_by(ID=sourceid).first()
+        if source == None:
+            source = DBSession.query(BudgetGroup).filter_by(ID=sourceid).first()
+        if source == None:
+            source = DBSession.query(BudgetItem).filter_by(ID=sourceid).first()
 
-#         return HTTPOk()
+        print "\n\nPrinting source children:"
+        for item in source.Children:
+            print "ID: "+ item.ID
+
+        print "\n\n"
+
+        dest= DBSession.query(Project).filter_by(ID=destinationid).first()
+        if dest == None:
+            dest = DBSession.query(BudgetGroup).filter_by(ID=destinationid).first()
+        if dest == None:
+            dest = DBSession.query(BudgetItem).filter_by(ID=destinationid).first()
+
+        dest.paste(source.copy(dest.ID), source.Children)
+
+        # DBSession.add(copied)
+
+        return HTTPOk()
