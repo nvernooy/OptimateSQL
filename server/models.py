@@ -26,12 +26,17 @@ import uuid
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
-# class Association(Base):
-#     __tablename__ = 'Association'
-#     Parent = Column(Integer, ForeignKey('left.id'), primary_key=True)
-#     Child = Column(Integer, ForeignKey('right.id'), primary_key=True)
-#     extra_data = Column(String(50))
-#     child = relationship("Child", backref="parent_assocs")
+class Association(Base):
+    def getID():
+        return uuid.uuid1().hex
+
+
+    __tablename__ = 'Association'
+    # ID = Column(Integer, primary_key=True, default=getID)
+    ID = Column(Text, primary_key=True, default=getID)
+    # ParentID = Column(Integer)
+
+    # child = relationship("Child", backref="parent_assocs")
 
 class Root(Base):
     """
@@ -40,11 +45,11 @@ class Root(Base):
     """
 
     __tablename__ = 'Root'
-    ID = Column(Integer, primary_key=True)
+    ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default='0')
 
-    Children = relationship("Project",
-                            backref='Parent',
-                            cascade="all, delete, delete-orphan")
+    # Children = relationship("Project",
+    #                         backref='Parent',
+    #                         cascade="all, delete, delete-orphan")
 
     def paste(self, source, sourcechildren):
         DBSession.add(source)
@@ -64,19 +69,27 @@ class Project(Base):
         return uuid.uuid1().hex
 
     __tablename__ = 'Project'
-    ID = Column(Text, primary_key=True, default=getID)
+    # ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
+    ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
     Name = Column(Text)
     Description = Column(Text)
-    ParentID = Column(Integer, ForeignKey('Root.ID'))
+    ParentID = Column(Integer, ForeignKey('Association.ID'))
+
+    OptimateObject = relationship('Association', foreign_keys='Project.ID')
+    Parent = relationship('Association', foreign_keys='Project.ParentID')
 
     # Parent = relationship("Root",
     #                         backref='Children',
     #                         primaryjoin="and_(Project.ParentID==Root.ID)",
     #                         cascade="all, delete, delete-orphan")
 
-    Children = relationship("BudgetGroup",
-                            backref='Parent',
-                            cascade="all, delete, delete-orphan")
+    # Children = relationship("BudgetGroup",
+    #                         backref='Parent',
+    #                         cascade="all, delete, delete-orphan")
+
+    # Parent = relationship('Association',
+    #                         backref='Children',
+    #                         cascade="all, delete")
 
     def copy(self, parentid):
         return Project(Name=self.Name, Description=self.Description, ParentID=parentid)
@@ -99,19 +112,26 @@ class BudgetGroup(Base):
         return uuid.uuid1().hex
 
     __tablename__ = 'BudgetGroup'
-    ID = Column(Text, primary_key=True, default=getID)
+    ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
     Name = Column(Text)
     Description = Column(Text)
-    ParentID = Column(Integer, ForeignKey('Project.ID'))
+    ParentID = Column(Integer, ForeignKey('Association.ID'))
+
+    OptimateObject = relationship('Association', foreign_keys='BudgetGroup.ID')
+    Parent = relationship('Association', foreign_keys='BudgetGroup.ParentID')
 
     # Parent = relationship("Project",
     #                         primaryjoin="and_(BudgetGroup.ParentID==Project.ID)",
     #                         backref='Children',
     #                         cascade="all, delete, delete-orphan")
 
-    Children = relationship("BudgetItem",
-                            backref='Parent',
-                            cascade="all, delete, delete-orphan")
+    # Children = relationship("BudgetItem",
+    #                         backref='Parent',
+    #                         cascade="all, delete, delete-orphan")
+
+    # Parent = relationship("Association",
+    #                         backref='Children',
+    #                         cascade="all, delete")
 
     def copy(self, parentid):
         return BudgetGroup(Name=self.Name, Description=self.Description, ParentID=parentid)
@@ -133,16 +153,23 @@ class BudgetItem(Base):
         return uuid.uuid1().hex
 
     __tablename__ = 'BudgetItem'
-    ID = Column(Text, primary_key=True, default=getID)
+    ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
     Name = Column(Text)
     Description = Column(Text)
     Quantity = Column(Integer)
     Rate = Column(Integer)
-    ParentID = Column(Integer, ForeignKey('BudgetGroup.ID'))
+    ParentID = Column(Integer, ForeignKey('Association.ID'))
 
-    Children = [] #relationship("BudgetItem",
+    OptimateObject = relationship('Association', foreign_keys='BudgetItem.ID')
+    Parent = relationship('Association', foreign_keys='BudgetItem.ParentID')
+
+    # Children = [] #relationship("BudgetItem",
                 #            backref='Parent',
                  #           cascade="all, delete, delete-orphan")
+
+    # Parent = relationship("Association",
+    #                         backref='Children',
+    #                         cascade="all, delete")
 
     def copy(self, parentid):
         return BudgetItem(Name=self.Name, Description=self.Description, Quantity=self.Quantity, Rate=self.Rate, ParentID=parentid)
