@@ -12,7 +12,7 @@ from pyramid.view import view_config
 
 from .models import (
     DBSession,
-    Root,
+    # Root,
     Project,
     BudgetGroup,
     BudgetItem,

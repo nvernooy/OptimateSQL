@@ -26,40 +26,58 @@ import uuid
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
-class Association(Base):
-    def getID():
-        return uuid.uuid1().hex
+# class Association(Base):
+#     def getID():
+#         return uuid.uuid1().hex
 
 
-    __tablename__ = 'Association'
+#     __tablename__ = 'Association'
     # ID = Column(Integer, primary_key=True, default=getID)
-    ID = Column(Text, primary_key=True, default=getID)
+    # ID = Column(Text, primary_key=True, default=getID)
     # ParentID = Column(Integer)
 
     # child = relationship("Child", backref="parent_assocs")
 
-class Root(Base):
-    """
-    A table in SQLite that only has the ID 0 and represents the root in the
-    hierarchy.
-    """
+class Node(Base):
+    def getID():
+        return uuid.uuid1().hex
 
-    __tablename__ = 'Root'
-    ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default='0')
+    __tablename__ = 'Node'
+    ID = Column(Text, primary_key=True, default=getID)
+    ParentID = Column(Text, ForeignKey('Node.ID'))
+    type = Column(Text(50))
 
-    # Children = relationship("Project",
-    #                         backref='Parent',
-    #                         cascade="all, delete, delete-orphan")
+    Children = relationship("Node",
+                backref=backref('Parent', remote_side=[ID], uselist=False)
+            )
 
-    def paste(self, source, sourcechildren):
-        DBSession.add(source)
-        DBSession.flush()
+    __mapper_args__ = {
+        'polymorphic_identity':'Node',
+        'polymorphic_on':type
+    }
 
-        for child in sourcechildren:
-            source.paste(child.copy(source.ID), child.Children)
+# class Root(Base):
+#     """
+#     A table in SQLite that only has the ID 0 and represents the root in the
+#     hierarchy.
+#     """
+
+#     __tablename__ = 'Root'
+#     ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default='0')
+
+#     # Children = relationship("Project",
+#     #                         backref='Parent',
+#     #                         cascade="all, delete, delete-orphan")
+
+#     def paste(self, source, sourcechildren):
+#         DBSession.add(source)
+#         DBSession.flush()
+
+#         for child in sourcechildren:
+#             source.paste(child.copy(source.ID), child.Children)
 
 
-class Project(Base):
+class Project(Node):
     """
     A table representing a Project in Optimate, it has an ID, Name, Description
     and ParentID that is the ID of its parent.
@@ -69,14 +87,26 @@ class Project(Base):
         return uuid.uuid1().hex
 
     __tablename__ = 'Project'
+    ID = Column(Text, ForeignKey('Node.ID'), primary_key=True)
     # ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
-    ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
     Name = Column(Text)
     Description = Column(Text)
-    ParentID = Column(Integer, ForeignKey('Association.ID'))
+    # ParentID = Column(Integer, ForeignKey('Association.ID'))
 
-    OptimateObject = relationship('Association', foreign_keys='Project.ID')
-    Parent = relationship('Association', foreign_keys='Project.ParentID')
+    __mapper_args__ = {
+        'polymorphic_identity':'Project',
+    }
+    # AssociationID = relationship('Association',
+    #                         foreign_keys='Project.ID',
+    #                         backref='OptimateObject',
+    #                         cascade='all, delete'
+    #                         )
+
+    # Parent = relationship('Association',
+    #                         foreign_keys='Project.ParentID',
+    #                         backref='Children',
+    #                         cascade='all, delete'
+    #                         )
 
     # Parent = relationship("Root",
     #                         backref='Children',
@@ -102,7 +132,7 @@ class Project(Base):
             source.paste(child.copy(source.ID), child.Children)
 
 
-class BudgetGroup(Base):
+class BudgetGroup(Node):
     """
     A table representing a BudgetGroup in Optimate, it has an ID, Name,
     Description and ParentID that is the ID of its parent.
@@ -112,13 +142,25 @@ class BudgetGroup(Base):
         return uuid.uuid1().hex
 
     __tablename__ = 'BudgetGroup'
-    ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
+    # ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
+    ID = Column(Text, ForeignKey('Node.ID'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
-    ParentID = Column(Integer, ForeignKey('Association.ID'))
+    # ParentID = Column(Integer, ForeignKey('Association.ID'))
 
-    OptimateObject = relationship('Association', foreign_keys='BudgetGroup.ID')
-    Parent = relationship('Association', foreign_keys='BudgetGroup.ParentID')
+    __mapper_args__ = {
+        'polymorphic_identity':'BudgetGroup',
+    }
+    # AssociationID = relationship('Association',
+    #                         foreign_keys='BudgetGroup.ID',
+    #                         backref='OptimateObject',
+    #                         cascade='all, delete'
+    #                         )
+    # Parent = relationship('Association',
+    #                         foreign_keys='BudgetGroup.ParentID',
+    #                         backref='Children',
+    #                         cascade='all, delete'
+    #                         )
 
     # Parent = relationship("Project",
     #                         primaryjoin="and_(BudgetGroup.ParentID==Project.ID)",
@@ -143,7 +185,7 @@ class BudgetGroup(Base):
         for child in sourcechildren:
             source.paste(child.copy(source.ID), child.Children)
 
-class BudgetItem(Base):
+class BudgetItem(Node):
     """
     A table representing a BudgetItem in Optimate, it has an ID, Name,
     Description, Quantity, Rate and ParentID that is the ID of its parent.
@@ -153,15 +195,27 @@ class BudgetItem(Base):
         return uuid.uuid1().hex
 
     __tablename__ = 'BudgetItem'
-    ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
+    # ID = Column(Text, ForeignKey('Association.ID'), primary_key=True, default=getID)
+    ID = Column(Text, ForeignKey('Node.ID'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
     Quantity = Column(Integer)
     Rate = Column(Integer)
-    ParentID = Column(Integer, ForeignKey('Association.ID'))
+    # ParentID = Column(Integer, ForeignKey('Association.ID'))
 
-    OptimateObject = relationship('Association', foreign_keys='BudgetItem.ID')
-    Parent = relationship('Association', foreign_keys='BudgetItem.ParentID')
+    __mapper_args__ = {
+        'polymorphic_identity':'BudgetItem',
+    }
+    # AssociationID = relationship('Association',
+    #                         foreign_keys='BudgetItem.ID',
+    #                         backref='OptimateObject',
+    #                         cascade='all, delete'
+    #                         )
+    # Parent = relationship('Association',
+    #                         foreign_keys='BudgetItem.ParentID',
+    #                         backref='Children',
+    #                         cascade='all, delete'
+    #                         )
 
     # Children = [] #relationship("BudgetItem",
                 #            backref='Parent',
