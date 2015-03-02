@@ -42,7 +42,7 @@ def main(global_config, **settings):
     config.add_subscriber(handleResponse, NewRequest)
     config.add_static_view('static', 'static', cache_max_age=3600)
 
-    config.add_route('root', '/')
+    config.add_route('rootview', '/')
     config.add_route('childview', '/{parentid}/')
     config.add_route('addview', '/{id}/add')
     config.add_route('deleteview', '/{id}/delete')
