@@ -23,6 +23,7 @@ from sqlalchemy.orm import (
 
 # Build the session and base used for the project
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+# DBSession.execute('pragma foreign_keys=on')
 Base = declarative_base()
 
 class Node(Base):
@@ -39,16 +40,16 @@ class Node(Base):
 
     __tablename__ = 'Node'
     ID = Column(Text, primary_key=True, default=getID)
-    ParentID = Column(Text, ForeignKey('Node.ID'))
+    ParentID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'))
     type = Column(Text(50))
 
     Children = relationship("Node",
                 backref=backref('Parent',
-                                remote_side=[ID],
-                                uselist=False,
-                                single_parent=True,
-                                cascade="all, delete, delete-orphan"
-                                )
+                                remote_side=[ID]
+                                ),
+                single_parent=True,
+                cascade="all, delete, delete-orphan",
+                passive_deletes = True
             )
 
     __mapper_args__ = {
@@ -65,7 +66,7 @@ class Project(Node):
     """
 
     __tablename__ = 'Project'
-    ID = Column(Text, ForeignKey('Node.ID'), primary_key=True)
+    ID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
 
@@ -94,6 +95,12 @@ class Project(Node):
         for child in sourcechildren:
             source.paste(child.copy(source.ID), child.Children)
 
+    def getCost(self):
+        total = 0
+        for item in self.Children:
+            total+=item.getCost()
+
+        return total
 
 class BudgetGroup(Node):
     """
@@ -104,7 +111,7 @@ class BudgetGroup(Node):
     """
 
     __tablename__ = 'BudgetGroup'
-    ID = Column(Text, ForeignKey('Node.ID'), primary_key=True)
+    ID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
 
@@ -132,6 +139,13 @@ class BudgetGroup(Node):
         for child in sourcechildren:
             source.paste(child.copy(source.ID), child.Children)
 
+    def getCost(self):
+        total = 0
+        for item in self.Children:
+            total+=item.getCost()
+
+        return total
+
 class BudgetItem(Node):
     """
     A table representing a BudgetItem in Optimate, it has an ID, Name,
@@ -142,7 +156,7 @@ class BudgetItem(Node):
         return uuid.uuid1().hex
 
     __tablename__ = 'BudgetItem'
-    ID = Column(Text, ForeignKey('Node.ID'), primary_key=True)
+    ID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
     Quantity = Column(Integer)
@@ -151,7 +165,6 @@ class BudgetItem(Node):
     __mapper_args__ = {
         'polymorphic_identity':'BudgetItem',
     }
-
 
     def copy(self, parentid):
         """
@@ -173,3 +186,10 @@ class BudgetItem(Node):
 
         for child in sourcechildren:
             source.paste(child.copy(source.ID), child.Children)
+
+    def getCost(self):
+        total = 0
+        for item in self.Children:
+            total+=item.getCost()
+
+        return self.Quantity*self.Rate + total

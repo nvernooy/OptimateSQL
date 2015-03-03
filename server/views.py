@@ -43,6 +43,12 @@ def childview(request):
 
     # Execute the sql query on the Node table to find all objects with that parent
     qry = DBSession.query(Node).filter_by(ParentID=parentid).all()
+    # granp =  DBSession.query(Node).filter_by(ID=parentid).first()
+    # print "\n\nClicked node: "
+    # print granp
+    # print "\n\n"
+    # print DBSession.query(Node).filter_by(ID=granp.ParentID).first()
+    # print "parent\n\n"
 
     # Format the result into a json readable list and respond with that
     for value in qry:
@@ -75,17 +81,20 @@ def additemview(request):
         name = request.json_body['Name']
         desc = request.json_body['Description']
         objecttype = request.json_body['Type']
+        quantity = request.json_body['Quantity']
+        rate = request.json_body['Rate']
 
         # Check if it is so be added to the root or not
         if parentid != '0':
             # Find the parent by going through the object tables
-            parent = DBSession.query(Project).filter_by(ID=parentid).first()
-            if parent == None:
-                parent = DBSession.query(BudgetGroup).filter_by(ID=parentid).first()
-                if parent == None:
-                    parent = DBSession.query(BudgetItem).filter_by(ID=parentid).first()
-                    if parent == None:
-                        return HTTPNotFound()
+            parent = DBSession.query(Node).filter_by(ID=parentid).first()
+            # parent = DBSession.query(Project).filter_by(ID=parentid).first()
+            # if parent == None:
+            #     parent = DBSession.query(BudgetGroup).filter_by(ID=parentid).first()
+            #     if parent == None:
+            #         parent = DBSession.query(BudgetItem).filter_by(ID=parentid).first()
+            #         if parent == None:
+            #             return HTTPNotFound()
 
             # Determine the type of object to be added and build it and append it
             if objecttype == 'project':
@@ -94,26 +103,34 @@ def additemview(request):
                                                 ParentID=parentid))
             elif objecttype == 'budgetgroup':
                 parent.Children.append(BudgetGroup(Name=name,
-                                                    Description=desc,
-                                                    ParentID=parentid))
+                                                Description=desc,
+                                                ParentID=parentid))
             elif objecttype == 'budgetitem':
                 parent.Children.append(BudgetItem(Name=name,
-                                                    Description=desc,
-                                                    ParentID=parentid,
-                                                    Quantity=10,
-                                                    Rate=5))
+                                                Description=desc,
+                                                ParentID=parentid,
+                                                Quantity=quantity,
+                                                Rate=rate))
             else:
                 return HTTPInternalServerError()
         # if it is to be added to the root it does not have a parent
         else:
             if objecttype == 'project':
-                newnode = Project(Name=name,Description=desc,ParentID=parentid)
+                newnode = Project(Name=name,
+                                        Description=desc,
+                                        ParentID=parentid)
                 DBSession.add(newnode)
             elif objecttype == 'budgetgroup':
-                newnode = BudgetGroup(Name=name,Description=desc,ParentID=parentid)
+                newnode = BudgetGroup(Name=name,
+                                        Description=desc,
+                                        ParentID=parentid)
                 DBSession.add(newnode)
             elif objecttype == 'budgetitem':
-                newnode = BudgetItem(Name=name,Description=desc,ParentID=parentid, Quantity=10, Rate=5)
+                newnode = BudgetItem(Name=name,
+                                        Description=desc,
+                                        ParentID=parentid,
+                                        Quantity=quantity,
+                                        Rate=rate)
                 DBSession.add(newnode)
             else:
                 return HTTPInternalServerError()
@@ -135,8 +152,10 @@ def deleteitemview(request):
         print "\n\nDeleting node: " + str(deleteid) +"\n\n"
 
         # Deleting it from the node table deleted the object
-        qry = DBSession.query(Node).filter_by(ID=deleteid).delete(
-                    synchronize_session='fetch')
+        deletethis = DBSession.query(Node).filter_by(ID=deleteid).first()
+        qry = DBSession.delete(deletethis)
+        # qry = DBSession.query(Node).filter_by(ID=deleteid).delete(
+        #             synchronize_session='fetch')
         if qry == 0:
             return HTTPNotFound()
 
@@ -161,25 +180,52 @@ def pasteitemview(request):
         # Find the object to be copied to from the path
         destinationid = request.matchdict['id']
 
-        # Find the source object in the tables
-        source= DBSession.query(Project).filter_by(ID=sourceid).first()
-        if source == None:
-            source = DBSession.query(BudgetGroup).filter_by(ID=sourceid).first()
-            if source == None:
-                source = DBSession.query(BudgetItem).filter_by(ID=sourceid).first()
-                if source == None:
-                    return HTTPNotFound()
+        source = DBSession.query(Node).filter_by(ID=sourceid).first()
+        dest = DBSession.query(Node).filter_by(ID=destinationid).first()
+        # # Find the source object in the tables
+        # source= DBSession.query(Project).filter_by(ID=sourceid).first()
+        # if source == None:
+        #     source = DBSession.query(BudgetGroup).filter_by(ID=sourceid).first()
+        #     if source == None:
+        #         source = DBSession.query(BudgetItem).filter_by(ID=sourceid).first()
+        #         if source == None:
+        #             return HTTPNotFound()
 
-        # Find the destination object in the tables
-        dest= DBSession.query(Project).filter_by(ID=destinationid).first()
-        if dest == None:
-            dest = DBSession.query(BudgetGroup).filter_by(ID=destinationid).first()
-            if dest == None:
-                dest = DBSession.query(BudgetItem).filter_by(ID=destinationid).first()
-                if dest == None:
-                    return HTTPNotFound()
+        # # Find the destination object in the tables
+        # dest= DBSession.query(Project).filter_by(ID=destinationid).first()
+        # if dest == None:
+        #     dest = DBSession.query(BudgetGroup).filter_by(ID=destinationid).first()
+        #     if dest == None:
+        #         dest = DBSession.query(BudgetItem).filter_by(ID=destinationid).first()
+        #         if dest == None:
+        #             return HTTPNotFound()
 
         # Paste the source into the destination
         dest.paste(source.copy(dest.ID), source.Children)
 
         return HTTPOk()
+
+
+@view_config(route_name = "costview",renderer='json')
+def costview(request):
+    """
+    The costview is called using the address from the node to be costed.
+    The node ID is sent in the request, and the total cost of that node
+    is calculated recursively from it's children.
+    """
+
+    if request.method == 'OPTIONS':
+        return {"success" : True}
+    else:
+        # Get the id of the node to be costed
+        costid = request.matchdict['id']
+        print "\n\nNode: " + str(costid) +"\n\n"
+
+        # Deleting it from the node table deleted the object
+        qry = DBSession.query(Node).filter_by(ID=costid).first()
+
+        if qry == None:
+            return HTTPNotFound()
+        totalcost = qry.getCost()
+
+        return {'Cost': totalcost}
