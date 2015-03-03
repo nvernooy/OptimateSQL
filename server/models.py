@@ -152,9 +152,6 @@ class BudgetItem(Node):
     Description, Quantity, Rate and ParentID that is the ID of its parent.
     """
 
-    def getID():
-        return uuid.uuid1().hex
-
     __tablename__ = 'BudgetItem'
     ID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
