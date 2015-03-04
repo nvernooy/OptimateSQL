@@ -43,6 +43,7 @@ def childview(request):
 
     # Execute the sql query on the Node table to find all objects with that parent
     qry = DBSession.query(Node).filter_by(ParentID=parentid).all()
+    print len(qry)
     # granp =  DBSession.query(Node).filter_by(ID=parentid).first()
     # print "\n\nClicked node: "
     # print granp
