@@ -22,7 +22,7 @@ from sqlalchemy.orm import (
     )
 
 # Build the session and base used for the project
-DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension('changed')))
 # DBSession.execute('pragma foreign_keys=on')
 Base = declarative_base()
 
@@ -35,17 +35,15 @@ class Node(Base):
     It also has a Children-Parent relationship attribute.
     """
 
-    def getID():
-        return uuid.uuid1().hex
-
     __tablename__ = 'Node'
-    ID = Column(Text, primary_key=True, default=getID)
-    ParentID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'))
+    ID = Column(Integer, primary_key=True)
+    ParentID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'))
     type = Column(Text(50))
 
     Children = relationship("Node",
                 backref=backref('Parent',
-                                remote_side=[ID]
+                                remote_side=[ID],
+                                post_update=True,
                                 ),
                 single_parent=True,
                 cascade="all, delete, delete-orphan",
@@ -55,7 +53,11 @@ class Node(Base):
     __mapper_args__ = {
         'polymorphic_identity':'Node',
         'polymorphic_on':type
-    }
+        }
+
+    def __repr__(self):
+        return "<Node(ID='%s', ParentID='%s')>" % (
+                self.ID, self.ParentID)
 
 class Project(Node):
     """
@@ -66,9 +68,12 @@ class Project(Node):
     """
 
     __tablename__ = 'Project'
-    ID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
+    ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
+    Total = Column(Integer)
+    Ordered = Column(Integer)
+    Claimed = Column(Integer)
 
     __mapper_args__ = {
         'polymorphic_identity':'Project',
@@ -102,6 +107,10 @@ class Project(Node):
 
         return total
 
+    def __repr__(self):
+        return "<Node(Name='%s', ID='%s', ParentID='%s')>" % (
+                            self.Name, self.ID, self.ParentID)
+
 class BudgetGroup(Node):
     """
     A table representing a BudgetGroup in Optimate, it has an ID, Name,
@@ -111,9 +120,12 @@ class BudgetGroup(Node):
     """
 
     __tablename__ = 'BudgetGroup'
-    ID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
+    ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
+    Total = Column(Integer)
+    Ordered = Column(Integer)
+    Claimed = Column(Integer)
 
     __mapper_args__ = {
         'polymorphic_identity':'BudgetGroup',
@@ -146,6 +158,11 @@ class BudgetGroup(Node):
 
         return total
 
+    def __repr__(self):
+        return "<Node(Name='%s', ID='%s', ParentID='%s')>" % (
+                         self.Name, self.ID, self.ParentID)
+
+
 class BudgetItem(Node):
     """
     A table representing a BudgetItem in Optimate, it has an ID, Name,
@@ -153,11 +170,15 @@ class BudgetItem(Node):
     """
 
     __tablename__ = 'BudgetItem'
-    ID = Column(Text, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
+    ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
+    Unit=Column(Text)
     Quantity = Column(Integer)
     Rate = Column(Integer)
+    Total = Column(Integer)
+    Ordered = Column(Integer)
+    Claimed = Column(Integer)
 
     __mapper_args__ = {
         'polymorphic_identity':'BudgetItem',
@@ -170,6 +191,7 @@ class BudgetItem(Node):
         """
         return BudgetItem(Name=self.Name,
                             Description=self.Description,
+                            Unit=self.Unit,
                             Quantity=self.Quantity,
                             Rate=self.Rate,
                             ParentID=parentid)
@@ -189,4 +211,97 @@ class BudgetItem(Node):
         for item in self.Children:
             total+=item.getCost()
 
-        return self.Quantity*self.Rate + total
+        self.Total = self.Quantity*self.Rate + total
+        return self.Total
+
+    def __repr__(self):
+        return "<Node(Name='%s', ID='%s', ParentID='%s')>" % (
+                            self.Name, self.ID, self.ParentID)
+
+class Component(Node):
+
+    __tablename__ = 'Component'
+    ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
+    Name = Column(Text)
+    Type = Column(Text)
+    Unit = Column(Text)
+    Quantity = Column(Integer)
+    Rate = Column(Integer)
+    Total = Column(Integer)
+    Ordered = Column(Integer)
+    Claimed = Column(Integer)
+
+    __mapper_args__ = {
+        'polymorphic_identity':'Component',
+    }
+
+    def copy(self, parentid):
+        """
+        copy returns an exact duplicate of this object,
+        but with the ParentID specified.
+        """
+        return Component(Name=self.Name,
+                            Type=self.Type,
+                            Unit=self.Unit,
+                            Quantity=self.Quantity,
+                            Rate=self.Rate,
+                            Total=self.Total,
+                            Ordered=self.Ordered,
+                            Claimed=self.Claimed,
+                            ParentID=parentid)
+
+    def paste(self, source, sourcechildren):
+        """
+        paste appends a source object to the children of this node,
+        and then recursively does the same with each child of the source object.
+        """
+        self.Children.append(source)
+
+        for child in sourcechildren:
+            source.paste(child.copy(source.ID), child.Children)
+
+    def getCost(self):
+        total = 0
+        for item in self.Children:
+            total+=item.getCost()
+
+        self.Total = total + self.Quantity*self.Rate
+        return self.Total
+
+    def __repr__(self):
+        return "<Node(Name='%s', ID='%s', ParentID='%s')>" % (
+                            self.Name, self.ID, self.ParentID)
+
+
+class ComponentType(Node):
+
+    __tablename__ = 'ComponentType'
+    ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
+    Name = Column(Text)
+
+    __mapper_args__ = {
+        'polymorphic_identity':'ComponentType',
+    }
+
+    def copy(self, parentid):
+        """
+        copy returns an exact duplicate of this object,
+        but with the ParentID specified.
+        """
+        return Component(Name=self.Name,
+                            ParentID=parentid)
+
+    def paste(self, source, sourcechildren):
+        """
+        paste appends a source object to the children of this node,
+        and then recursively does the same with each child of the source object.
+        """
+        self.Children.append(source)
+
+        for child in sourcechildren:
+            source.paste(child.copy(source.ID), child.Children)
+
+
+    def __repr__(self):
+        return "<Node(Name='%s', ID='%s', ParentID='%s')>" % (
+                            self.Name, self.ID, self.ParentID)
