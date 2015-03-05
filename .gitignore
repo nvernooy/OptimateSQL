@@ -56,6 +56,9 @@ target/
 # ZODB files
 *.fs*
 
+# SQLite files
+*.sqlite
+
 # Ubuntu temp files
 *~
 
