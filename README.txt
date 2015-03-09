@@ -17,6 +17,7 @@ Getting Started in development mode
 
 - Note: currently by default no data is input in the database, this is done seperately using populatedb.py 
 	and the Optimate excel files
+	To fully run the project ensure you have server.sqlite in the current directory.
 
 - Start the server by running:
 	$VENV/bin/pserve development.ini
