@@ -18,7 +18,10 @@
         data-node-children="children" >
     </div>
 */
+// -----------------------------------------------------------
 // Modal dialog module
+// The Modal dialog is used for user interaction with the items in Optimate
+// It opens a dialog menu with options to select
 (function() {
   var app;
 
@@ -115,14 +118,12 @@
 
 }).call(this);
 
-
+//------------------------------------------------------------------
 // Treeview module
+// The Treeview is what is used to display the Optimate objects in a tree-hierarchy
 (function ( angular ) {
     'use strict';
-    // var optimateApp = angular.module( 'angularTreeview', [] );
 
-    // Add the right click directive
-    // optimateApp.directive(
     angular.module( 'angularTreeview', ['ngModal'] )
     .directive(
         'treeModel', ['$compile', '$http', function( $compile, $http) {
@@ -143,13 +144,17 @@
                     var nodePath = attrs.nodePath || 'path'
                     // Copied node to be pasted
                     scope.copiednode;
-                    // modal shown
+                    // modal shown and other modal variables
                     scope.showoptions = false;
                     scope.showinput = false;
                     scope.showcosts = false
 
                     //tree template
+                    // this is appended to the html and compiled,
+                    // the result is seen by the user
                     var template =
+                        // iterate through a list adding the items
+                        // how they are displayed depends on their current state
                         '<ul>' +
                             '<li data-ng-repeat="node in ' + treeModel + '">' +
                                 '<i class="collapsed" ' +
@@ -169,13 +174,8 @@
                                     '.length">'+
                                 '</i> ' +
 
-                                // '<span class = "selectedNode" data-ng-class="node.selected" '+
-                                //     'data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}'+
-                                //     '<span class = "addItem">'+
-                                //         '<a ng-click="addItem(node.'+nodePath+')" href="">+</a>'+
-                                //     '</span>'
-                                // '<span>' +
-
+                                // when a node label is selected a function
+                                // based on the node id is called
                                 '<span data-ng-class="node.selected" '+
                                     'data-ng-click="' + treeId +
                                     '.selectNodeLabel(node)">'+
@@ -183,6 +183,8 @@
                                 '</span>' +
 
                                 // Modal dialogue with functions
+                                // The button to open the options menus is a '+'
+                                // that appears when the node is selected
                                 '<span class="additem" data-ng-show="node.selected">'+
                                     '<button data-ng-click="showoptions = true;">+</button>'+
                                     '<modal-dialog  show=showoptions '+
@@ -190,66 +192,71 @@
                                                     'width="150px">'+
                                             // When Add button is pressed
                                             // another modal dialog opens
+                                            // with input boxes for the new item
                                             '<button data-ng-click="showinput=true">Add</button>'+
                                                 '<modal-dialog show=showinput '+
-                                                                'dialog-title="Enter data" '+
-                                                                'width="300px">'+
-                                                    '<form data-ng-submit="'+
-                                                                treeId + '.addItem(node.Path)">'+
-                                                        'Name:<br>'+
-                                                        '<input type="text" '+
-                                                                'name="inputName" '+
-                                                                'data-ng-model="formData.inputName" '+
-                                                                'required '+
-                                                                'autofocus>'+
-                                                        '<br>Description:<br>'+
-                                                        '<input type="text" '+
-                                                                'name="inputDescription" '+
-                                                                'data-ng-model="formData.inputDescription" '+
-                                                                'required '+
-                                                                'autofocus>'+
-                                                        '<br>Type:<br>'+
-                                                        '<input type="radio" '+
-                                                                'data-ng-model="formData.inputType" '+
-                                                                'data-ng-click="showcosts=false"'+
-                                                                'value="project">'+
-                                                                'Project<br>'+
-                                                        '<input type="radio" '+
-                                                                'data-ng-model="formData.inputType" '+
-                                                                'data-ng-click="showcosts=false"'+
-                                                                'value="budgetgroup">'+
-                                                                'BudgetGroup<br>'+
-                                                        '<input type="radio" '+
-                                                                'data-ng-model="formData.inputType" '+
-                                                                'data-ng-click="showcosts=true"'+
-                                                                'value="budgetitem">'+
-                                                                'BudgetItem<br>'+
-                                                        '<div data-ng-show="showcosts">'+
-                                                                '<br>Quantity:<br>'+
-                                                                    '<input type="integer" '+
-                                                                    'name="inputQuantity" '+
-                                                                    'data-ng-model="formData.inputQuantity">'+
-                                                                '<br>Rate:<br>'+
-                                                                    '<input type="integer" '+
-                                                                    'name="inputRate" '+
-                                                                    'data-ng-model="formData.inputRate">'+
-                                                        '</div>'+
-                                                        '<input type="submit" '+
-                                                            'value="Add"/>'+
+                                                            'dialog-title="Enter data" '+
+                                                            'width="300px">'+
+                                                '<form data-ng-submit="'+
+                                                            treeId + '.addItem(node.Path)">'+
+                                                    'Name:<br>'+
+                                                    '<input type="text" '+
+                                                            'name="inputName" '+
+                                                            'data-ng-model="formData.inputName" '+
+                                                            'required '+
+                                                            'autofocus>'+
+                                                    '<br>Description:<br>'+
+                                                    '<input type="text" '+
+                                                            'name="inputDescription" '+
+                                                            'data-ng-model="formData.inputDescription" '+
+                                                            'required '+
+                                                            'autofocus>'+
+                                                    '<br>Type:<br>'+
+                                                    '<input type="radio" '+
+                                                            'data-ng-model="formData.inputType" '+
+                                                            'data-ng-click="showcosts=false"'+
+                                                            'value="project">'+
+                                                            'Project<br>'+
+                                                    '<input type="radio" '+
+                                                            'data-ng-model="formData.inputType" '+
+                                                            'data-ng-click="showcosts=false"'+
+                                                            'value="budgetgroup">'+
+                                                            'BudgetGroup<br>'+
+                                                    '<input type="radio" '+
+                                                            'data-ng-model="formData.inputType" '+
+                                                            'data-ng-click="showcosts=true"'+
+                                                            'value="budgetitem">'+
+                                                            'BudgetItem<br>'+
+                                                    '<div data-ng-show="showcosts">'+
+                                                            '<br>Quantity:<br>'+
+                                                                '<input type="integer" '+
+                                                                'name="inputQuantity" '+
+                                                                'data-ng-model="formData.inputQuantity">'+
+                                                            '<br>Rate:<br>'+
+                                                                '<input type="integer" '+
+                                                                'name="inputRate" '+
+                                                                'data-ng-model="formData.inputRate">'+
+                                                    '</div>'+
+                                                    '<input type="submit" '+
+                                                        'value="Add"/>'+
                                                     '</form>'+
                                                 '</modal-dialog>'+
+                                            // Delete an item
                                             '<button data-ng-click='+
                                                         '"' + treeId + '.deleteItem(node.Path, node.ID)">'+
                                                         'Delete'+
                                             '</button>'+
+                                            // Copy the path of the item
                                             '<button data-ng-click='+
                                                         '"' + treeId + '.copy(node.Path)">'+
                                                         'Copy'+
                                             '</button>'+
+                                            // Paste the item
                                             '<button data-ng-click='+
                                                         '"' + treeId + '.paste(node.Path)">'+
                                                         'Paste'+
                                             '</button>'+
+                                            // Get the cost of the item
                                             '<button data-ng-click='+
                                                         '"' + treeId + '.costItem(node.Path)">'+
                                                         'Get total cost'+
@@ -276,9 +283,10 @@
                             //create tree object if not exists
                             scope[treeId] = scope[treeId] || {};
 
-                            // function to POST data to server to add item
-                            // Get values from the user input
+                            // function to add item to Optimate
                             scope[treeId].addItem = function(path) {
+                                // Get values from the user input
+                                // and clear the input forms
                                 var name = scope.formData.inputName;
                                 scope.formData.inputName = "";
                                 var description = scope.formData.inputDescription;
@@ -291,6 +299,9 @@
 
                                 console.log("Adding a " + type + " " + name +
                                     ", " + description + " to: " +path);
+
+                                // the item is found by routing to it's path
+                                // and adding the function to be executed
                                 $http({
                                     method: 'POST',
                                     url: 'http://localhost:8100' + path + 'add',
@@ -321,6 +332,7 @@
                             }
 
                             // Function to copy a node
+                            // the node address only is copied into the scope
                             scope[treeId].copy = function(cnode) {
                                 scope.copiednode = cnode;
                                 console.log("Path that is copied: " +

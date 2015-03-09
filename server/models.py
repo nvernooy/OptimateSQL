@@ -173,7 +173,7 @@ class BudgetItem(Node):
     ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
-    Unit=Column(Text)
+    # Unit=Column(Text)
     Quantity = Column(Integer)
     Rate = Column(Integer)
     Total = Column(Integer)
@@ -223,8 +223,9 @@ class Component(Node):
     __tablename__ = 'Component'
     ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
-    Type = Column(Text)
-    Unit = Column(Text)
+    Description = Column(Text)
+    Type = Column(Integer, ForeignKey('ComponentType.ID'))
+    # Unit = Column(Text)
     Quantity = Column(Integer)
     Rate = Column(Integer)
     Total = Column(Integer)
@@ -273,11 +274,14 @@ class Component(Node):
                             self.Name, self.ID, self.ParentID)
 
 
-class ComponentType(Node):
+class ComponentType(Base):
 
     __tablename__ = 'ComponentType'
-    ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
+    ID = Column(Integer, primary_key=True)
     Name = Column(Text)
+
+    Components = relationship('Component',
+                            backref=backref('TypeOf'))
 
     __mapper_args__ = {
         'polymorphic_identity':'ComponentType',
