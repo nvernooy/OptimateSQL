@@ -32,7 +32,7 @@ for setting up the client in the Optimate Project
 
 - Ensure you have NodeJS installed on your system
 
-- cd <directory containing this file>
+- cd client
 
 - Download the tool dependencies by running:
 	npm install
@@ -41,7 +41,16 @@ for setting up the client in the Optimate Project
 	npm start
 
 - The client server will start and the Optimate root view can be accessed via
-	http://127.0.0.1:8000/index.html
+	http://127.0.0.1:8000
+
+- Clicking on a node label will load it's children and display a "+" next to it
+
+- Clicking on the "+" will display a dialog menus of options
+	- Add
+	- Copy
+        - Paste
+	- Delete
+	- Calculate cost
 
 
 

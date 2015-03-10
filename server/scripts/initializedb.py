@@ -19,9 +19,12 @@ from pyramid.paster import (
 
 from ..models import (
     DBSession,
+    Node,
     Project,
     BudgetGroup,
     BudgetItem,
+    Component,
+    ComponentType,
     Base,
     )
 
@@ -47,40 +50,74 @@ def main(argv=sys.argv):
     Base.metadata.create_all(engine)
     # with transaction.manager:
     #     # Build the object models
+        # root = Node(ID=0)
+        # DBSession.add(root)
     #     project = Project(Name="PName",
+    #                         ID=1,
     #                         Description="PDesc",
-    #                         ParentID='0')
+    #                         ParentID=0)
 
     #     budgetgroup = BudgetGroup(Name="BGName",
+    #                         ID=2,
     #                         Description="BGDesc",
     #                         ParentID=project.ID)
 
     #     budgetitem = BudgetItem(Name="BIName",
+    #                         ID=3,
     #                         Description="BIDesc",
     #                         Quantity=10,
     #                         Rate=5,
     #                         ParentID=budgetgroup.ID)
 
+    #     comptype = ComponentType(ID=1,
+    #                         Name="type")
+    #     DBSession.add(comptype)
+
+    #     comp = Component (ID=7,
+    #                         Name="COmpName",
+    #                         Description="CompDesc",
+    #                         Type=1,
+    #                         Quantity=5,
+    #                         Rate=10,
+    #                         ParentID=budgetgroup.ID)
+
     #     # Append the children nodes to their parents
-    #     budgetgroup.Children.append(budgetitem)
-    #     project.Children.append(budgetgroup)
+    #     # budgetgroup.Children.append(budgetitem)
+    #     # project.Children.append(budgetgroup)
     #     DBSession.add(project)
+    #     DBSession.add(budgetgroup)
+    #     DBSession.add(budgetitem)
+    #     DBSession.add(comp)
 
 
     #     projectb = Project(Name="BPName",
+    #                         ID=4,
     #                         Description="BPDesc",
-    #                         ParentID='0')
+    #                         ParentID=0)
 
     #     budgetgroupb = BudgetGroup(Name="BBGName",
+    #                         ID=5,
     #                         Description="BBGDesc",
     #                         ParentID=projectb.ID)
 
     #     budgetitemb = BudgetItem(Name="BBIName",
+    #                         ID=6,
     #                         Description="BBIDesc",
     #                         Quantity=10,
     #                         Rate=5,
     #                         ParentID=budgetgroupb.ID)
 
-    #     budgetgroupb.Children.append(budgetitemb)
-    #     projectb.Children.append(budgetgroupb)
+    #     compb = Component (ID=8,
+    #                         Name="COmpName",
+    #                         Description="CompDesc",
+    #                         Type=1,
+    #                         Quantity=5,
+    #                         Rate=10,
+    #                         ParentID=budgetitemb.ID)
+
+    #     # budgetgroupb.Children.append(budgetitemb)
+    #     # projectb.Children.append(budgetgroupb)
     #     DBSession.add(projectb)
+    #     DBSession.add(budgetgroupb)
+    #     DBSession.add(budgetitemb)
+    #     DBSession.add(compb)

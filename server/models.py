@@ -40,15 +40,10 @@ class Node(Base):
     ParentID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'))
     type = Column(Text(50))
 
-    Children = relationship("Node",
-                backref=backref('Parent',
-                                remote_side=[ID],
-                                post_update=True,
-                                ),
-                single_parent=True,
-                cascade="all, delete, delete-orphan",
-                passive_deletes = True
-            )
+    Children = relationship('Node',
+                        cascade="all",
+                        backref=backref("Parent", remote_side='Node.ID'),
+                    )
 
     __mapper_args__ = {
         'polymorphic_identity':'Node',
@@ -87,7 +82,10 @@ class Project(Node):
 
         return Project(Name=self.Name,
                         Description=self.Description,
-                        ParentID=parentid)
+                        ParentID=parentid,
+                        Total=self.Total,
+                        Ordered=self.Ordered,
+                        Claimed=self.Claimed)
 
     def paste(self, source, sourcechildren):
         """
@@ -100,11 +98,22 @@ class Project(Node):
         for child in sourcechildren:
             source.paste(child.copy(source.ID), child.Children)
 
-    def getCost(self):
+    def recalculateTotal(self):
+        total = 0
+        if self.Total == None:
+            self.recalculateAll()
+        for item in self.Children:
+            total+=item.Total
+
+        self.Total = total
+        return total
+
+    def recalculateAll(self):
         total = 0
         for item in self.Children:
-            total+=item.getCost()
+            total+=item.recalculateAll()
 
+        self.Total = total
         return total
 
     def __repr__(self):
@@ -138,7 +147,11 @@ class BudgetGroup(Node):
         """
         return BudgetGroup(Name=self.Name,
                             Description=self.Description,
-                            ParentID=parentid)
+                            ParentID=parentid,
+                            Total=self.Total,
+                            Ordered=self.Ordered,
+                            Claimed=self.Claimed
+                            )
 
     def paste(self, source, sourcechildren):
         """
@@ -151,11 +164,19 @@ class BudgetGroup(Node):
         for child in sourcechildren:
             source.paste(child.copy(source.ID), child.Children)
 
-    def getCost(self):
+    def recalculateTotal(self):
+        total = 0
+        if self.Total == None:
+            self.recalculateAll()
+        for item in self.Children:
+            total+=item.Total
+
+    def recalculateAll(self):
         total = 0
         for item in self.Children:
-            total+=item.getCost()
+            total+=item.recalculateAll()
 
+        self.Total = total
         return total
 
     def __repr__(self):
@@ -191,10 +212,13 @@ class BudgetItem(Node):
         """
         return BudgetItem(Name=self.Name,
                             Description=self.Description,
-                            Unit=self.Unit,
+                            # Unit=self.Unit,
                             Quantity=self.Quantity,
                             Rate=self.Rate,
-                            ParentID=parentid)
+                            ParentID=parentid,
+                            Total=self.Total,
+                            Ordered=self.Ordered,
+                            Claimed=self.Claimed)
 
     def paste(self, source, sourcechildren):
         """
@@ -206,13 +230,47 @@ class BudgetItem(Node):
         for child in sourcechildren:
             source.paste(child.copy(source.ID), child.Children)
 
-    def getCost(self):
+    def recalculateTotal(self):
+        total = 0
+        if self.Total == None:
+            print "\n\nrecaculating\n\n"
+            self.recalculateAll()
+        for item in self.Children:
+            print "iterating"
+            print item.Total
+            total+=item.Total
+
+        # if the rate of this BudgetItem is 0, then it is assumed it's rate is
+        # baseb on it's components
+        if self.Rate == 0 or self.Rate == None:
+            self.Rate = 0
+            for item in self.Children:
+                self.Rate+=item.Total
+        print "\n\nThis is the rate of this budgetitem: "+ str(self.Rate) + "\n\n"
+        if self.Quantity == None:
+            self.Quantity = 0
+        total = total + self.Quantity*self.Rate
+        self.Total = total
+        return total
+
+    def recalculateAll(self):
         total = 0
         for item in self.Children:
-            total+=item.getCost()
+            total+=item.recalculateAll()
 
-        self.Total = self.Quantity*self.Rate + total
-        return self.Total
+        # if the rate of this BudgetItem is 0, then it is assumed it's rate is
+        # based on it's components
+        if self.Rate == 0 or self.Rate == None:
+            self.Rate = 0
+            qry = DBSession.query(Component).filter_by(ParentID=self.ID).all()
+            for item in qry:
+                self.Rate+=item.Total
+            print "\n\nthis is this budgetitems new rate: " + str(self.Rate) + "\n\n"
+        if self.Quantity == None:
+            self.Quantity = 0
+        total = total + self.Quantity*self.Rate
+        self.Total = total
+        return total
 
     def __repr__(self):
         return "<Node(Name='%s', ID='%s', ParentID='%s')>" % (
@@ -243,7 +301,7 @@ class Component(Node):
         """
         return Component(Name=self.Name,
                             Type=self.Type,
-                            Unit=self.Unit,
+                            # Unit=self.Unit,
                             Quantity=self.Quantity,
                             Rate=self.Rate,
                             Total=self.Total,
@@ -261,13 +319,39 @@ class Component(Node):
         for child in sourcechildren:
             source.paste(child.copy(source.ID), child.Children)
 
-    def getCost(self):
+    def recalculateTotal(self):
+        total = 0
+        if self.Total == None:
+            self.recalculateAll()
+        for item in self.Children:
+            total+=item.Total
+
+        if self.Rate == None:
+            self.Rate = 0
+
+        if self.Quantity == None:
+            self.Quantity = 0
+
+        total = total + self.Quantity*self.Rate
+        self.Total = total
+        return total
+
+    def recalculateAll(self):
         total = 0
         for item in self.Children:
-            total+=item.getCost()
+            total+=item.recalculateAll()
 
-        self.Total = total + self.Quantity*self.Rate
-        return self.Total
+        if self.Rate == None:
+            self.Rate = 0
+
+        if self.Quantity == None:
+            self.Quantity = 0
+
+        total = total + self.Quantity*self.Rate
+
+        self.Total = total
+        print "\n\nthis components new total: " +str(self.Total)+"\n\n"
+        return total
 
     def __repr__(self):
         return "<Node(Name='%s', ID='%s', ParentID='%s')>" % (

@@ -76,6 +76,8 @@ with transaction.manager:
     # qry =  session.query(Node).all()
     # for n in qry:
     #     print n
+    root = Node(ID=0)
+    session.add(root)
 
     projectbook = xlrd.open_workbook("/home/niel/projects/exceldata/Projects.xls")
 
