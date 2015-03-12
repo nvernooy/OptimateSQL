@@ -13,6 +13,7 @@ from sqlalchemy import (
     Integer,
     Text,
     ForeignKey,
+    Float,
     )
 
 from sqlalchemy.orm import (
@@ -67,9 +68,9 @@ class Project(Node):
     ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
-    _Total = Column("Total", Integer)
-    _Ordered = Column("Ordered", Integer)
-    _Claimed = Column("Claimed", Integer)
+    _Total = Column("Total", Float)
+    _Ordered = Column("Ordered", Float)
+    _Claimed = Column("Claimed", Float)
 
     __mapper_args__ = {
         'polymorphic_identity':'Project',
@@ -89,8 +90,11 @@ class Project(Node):
         # update the parent with the new total
         if self.ParentID != 0:
             qry = DBSession.query(Node).filter_by(ID=self.ParentID).first()
-            if qry != None:
+            # if qry != None:
+            try:
                 qry.Total = qry.Total+difference
+            except AttributeError, a:
+                pass
 
     @hybrid_property
     def Ordered(self):
@@ -162,9 +166,9 @@ class BudgetGroup(Node):
     ID = Column(Integer, ForeignKey('Node.ID', ondelete='CASCADE'), primary_key=True)
     Name = Column(Text)
     Description = Column(Text)
-    _Total = Column("Total", Integer)
-    _Ordered = Column("Ordered", Integer)
-    _Claimed = Column("Claimed", Integer)
+    _Total = Column("Total", Float)
+    _Ordered = Column("Ordered", Float)
+    _Claimed = Column("Claimed", Float)
 
     __mapper_args__ = {
         'polymorphic_identity':'BudgetGroup',
@@ -182,10 +186,13 @@ class BudgetGroup(Node):
         difference = total - oldtotal
 
         # update the parent with the new total
-        if self.ParentID != 0:
-            qry = DBSession.query(Node).filter_by(ID=self.ParentID).first()
-            if qry != None:
-                qry.Total = qry.Total+difference
+        # if self.ParentID != 0:
+        #     qry = DBSession.query(Node).filter_by(ID=self.ParentID).first()
+        #     # if qry != None:
+        #     try:
+        #         qry.Total = qry.Total+difference
+        #     except AttributeError, a:
+        #         pass
 
     @hybrid_property
     def Ordered(self):
@@ -256,11 +263,11 @@ class BudgetItem(Node):
     Name = Column(Text)
     Description = Column(Text)
     Unit=Column(Text)
-    _Quantity = Column("Quantity", Integer)
-    _Rate = Column("Rate", Integer)
-    _Total = Column("Total", Integer)
-    _Ordered = Column("Ordered", Integer)
-    _Claimed = Column("Claimed", Integer)
+    _Quantity = Column("Quantity", Float)
+    _Rate = Column("Rate", Float)
+    _Total = Column("Total", Float)
+    _Ordered = Column("Ordered", Float)
+    _Claimed = Column("Claimed", Float)
 
     __mapper_args__ = {
         'polymorphic_identity':'BudgetItem',
@@ -278,10 +285,13 @@ class BudgetItem(Node):
         difference = total - oldtotal
 
         # update the parent with the new total
-        if self.ParentID != 0:
-            qry = DBSession.query(Node).filter_by(ID=self.ParentID).first()
-            if qry != None:
-                qry.Total = qry.Total+difference
+        # if self.ParentID != 0:
+        #     qry = DBSession.query(Node).filter_by(ID=self.ParentID).first()
+        #     # if qry != None:
+        #     try:
+        #         qry.Total = qry.Total+difference
+        #     except AttributeError, a:
+        #         pass
 
     @hybrid_property
     def Ordered(self):
@@ -387,11 +397,11 @@ class Component(Node):
     Description = Column(Text)
     Type = Column(Integer, ForeignKey('ComponentType.ID'))
     Unit = Column(Text)
-    _Quantity = Column("Quantity", Integer)
-    _Rate = Column("Rate", Integer)
-    _Total = Column("Total", Integer)
-    _Ordered = Column("Ordered", Integer)
-    _Claimed = Column("Claimed", Integer)
+    _Quantity = Column("Quantity", Float)
+    _Rate = Column("Rate", Float)
+    _Total = Column("Total", Float)
+    _Ordered = Column("Ordered", Float)
+    _Claimed = Column("Claimed", Float)
 
     __mapper_args__ = {
         'polymorphic_identity':'Component',
@@ -409,10 +419,13 @@ class Component(Node):
         difference = total - oldtotal
 
         # update the parent with the new total
-        if self.ParentID != 0:
-            qry = DBSession.query(Node).filter_by(ID=self.ParentID).first()
-            if qry != None:
-                qry.Total = qry.Total+difference
+        # if self.ParentID != 0:
+        #     qry = DBSession.query(Node).filter_by(ID=self.ParentID).first()
+        #     # if qry != None:
+        #     try:
+        #         qry.Total = qry.Total+difference
+        #     except AttributeError, a:
+        #         pass
 
     @hybrid_property
     def Ordered(self):
@@ -539,21 +552,19 @@ class ResourceCategory(Base):
     __tablename__ = 'ResourceCategory'
     Name = Column(Text, primary_key = True)
     Description = Column(Text)
-    Rate = Column(Integer)
+    Rate = Column(Float)
 
-    # ResourceList = relationship('ResourceCategory',
-    #                     cascade="all",
-    #                     backref=backref("Category", remote_side='Category.Name'),
-    #                 )
-    # __mapper_args__ = {
-    #     'polymorphic_identity':'ResourceCategory'
-    #     }
+    ResourceList = relationship('Resource',
+                        cascade="all",
+                        backref=backref("Category"),
+                    )
+
 
     def __repr__(self):
         return "<ResourceCategory(Name='%s', Description='%s')>" % (
                             self.Name, self.Description)
 
-class Resource(ResourceCategory):
+class Resource(Base):
 
     __tablename__ = 'Resource'
     Name = Column(Text, ForeignKey('ResourceCategory.Name'))

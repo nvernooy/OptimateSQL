@@ -97,15 +97,15 @@ with transaction.manager:
         name = sheet.cell(x, nameindex).value
         description = sheet.cell(x, descriptionindex).value
         try:
-            budgetcost = int(sheet.cell(x, budgetcostindex).value)
+            budgetcost = float(sheet.cell(x, budgetcostindex).value)
         except ValueError, e:
             budgetcost = 0
         try:
-            ordercost = int(sheet.cell(x, ordercostindex).value)
+            ordercost = float(sheet.cell(x, ordercostindex).value)
         except ValueError, e:
             ordercost = 0
         try:
-            claimedcost = int(sheet.cell(x, claimedcostindex).value)
+            claimedcost = float(sheet.cell(x, claimedcostindex).value)
         except ValueError, e:
             claimedcost = 0
 
@@ -145,7 +145,6 @@ with transaction.manager:
         if pid<0:
             pid = -pid
             if pid not in changedbgcodes:
-                pid = int(pid)
                 newcode+=1
                 changedbgcodes[pid] = newcode
                 if code == pid:
@@ -159,15 +158,15 @@ with transaction.manager:
         name = sheet.cell(x, nameindex).value
         description = sheet.cell(x, descriptionindex).value
         try:
-            budgetcost = int(sheet.cell(x, budgetcostindex).value)
+            budgetcost = float(sheet.cell(x, budgetcostindex).value)
         except ValueError, e:
             budgetcost = 0
         try:
-            ordercost = int(sheet.cell(x, ordercostindex).value)
+            ordercost = float(sheet.cell(x, ordercostindex).value)
         except ValueError, e:
             ordercost = 0
         try:
-            claimedcost = int(sheet.cell(x, claimedcostindex).value)
+            claimedcost = float(sheet.cell(x, claimedcostindex).value)
         except ValueError, e:
             claimedcost = 0
         try:
@@ -224,7 +223,6 @@ with transaction.manager:
         if pid<0:
             pid = -pid
             if pid not in changedbicodes:
-                pid = int(pid)
                 newcode+=1
                 changedbicodes[pid] = newcode
                 if code == pid:
@@ -247,22 +245,29 @@ with transaction.manager:
         code = int(sheet.cell(x,codeindex).value)
         name = sheet.cell(x, nameindex).value
         description = sheet.cell(x, descriptionindex).value
-        budgetcost = sheet.cell(x, budgetcostindex).value
-        ordercost = sheet.cell(x, ordercostindex).value
-        claimedcost = sheet.cell(x, claimedcostindex).value
         measureunit = sheet.cell(x, unitindex).value
+        try:
+            claimedcost = float(sheet.cell(x, claimedcostindex).value)
+        except ValueError, e:
+            claimedcost = 0
+        try:
+            ordercost = float(sheet.cell(x, ordercostindex).value)
+        except ValueError, e:
+            ordercost = 0
         try:
             parentcode = int(sheet.cell(x,parentindex).value)
         except ValueError, e:
             parentcode = 0
-
         try:
-            quantity = int(sheet.cell(x,quantityindex).value)
+            budgetcost = float(sheet.cell(x, budgetcostindex).value)
+        except ValueError, e:
+            budgetcost = 0
+        try:
+            quantity = float(sheet.cell(x,quantityindex).value)
         except ValueError, e:
             quantity = 0
-
         try:
-            rate = int(sheet.cell(x,rateindex).value)
+            rate = float(sheet.cell(x,rateindex).value)
         except ValueError, e:
             rate = 0
 
@@ -322,7 +327,6 @@ with transaction.manager:
         if pid<0:
             pid = -pid
             if pid not in changedcocodes:
-                pid = int(pid)
                 newcode+=1
                 changedcocodes[pid] = newcode
 
@@ -351,21 +355,29 @@ with transaction.manager:
         name = sheet.cell(x, nameindex).value
         description = sheet.cell(x, descriptionindex).value
         cotype = sheet.cell(x, typeindex).value
-        budgetcost = sheet.cell(x, budgetcostindex).value
-        ordercost = sheet.cell(x, ordercostindex).value
-        claimedcost = sheet.cell(x, claimedcostindex).value
-        quantity = sheet.cell(x, quantityindex).value
         measureunit = sheet.cell(x, unitindex).value
+        try:
+            budgetcost = float(sheet.cell(x, budgetcostindex).value)
+        except ValueError, e:
+            budgetcost = 0
+        try:
+            ordercost = float(sheet.cell(x, ordercostindex).value)
+        except ValueError, e:
+            ordercost = 0
+        try:
+            claimedcost = float(sheet.cell(x, claimedcostindex).value)
+        except ValueError, e:
+            claimedcost = 0
         try:
             parentcode = int(sheet.cell(x,parentindex).value)
         except ValueError, e:
             parentcode = 0
         try:
-            quantity = int(sheet.cell(x,quantityindex).value)
+            quantity = float(sheet.cell(x,quantityindex).value)
         except ValueError, e:
             quantity = 0
         try:
-            rate = int(sheet.cell(x,rateindex).value)
+            rate = float(sheet.cell(x,rateindex).value)
         except ValueError, e:
             rate = 0
 
